@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import type { RouteRecordRaw } from 'vue-router'
 import { getMe } from '@/api/auth'
 import { buildRoutes } from '@/router/dynamic'
+import { useUserStore } from './user'
 import type { MenuNode } from '@/types'
 
 function collectPerms(menus: MenuNode[]): string[] {
@@ -22,10 +23,13 @@ export const usePermissionStore = defineStore('permission', {
   }),
   actions: {
     async loadPermission() {
-      const { menus } = await getMe()
+      const { userInfo, menus } = await getMe()
       this.menus = menus
       this.perms = collectPerms(menus)
       this.dynamicRoutes = buildRoutes(menus)
+      // getMe 一次返回 userInfo + menus：菜单交给本 store，用户信息顺带写入
+      // user store（getMe 只有这一个消费点，避免额外请求）。导航栏展示用户名依赖此赋值。
+      useUserStore().userInfo = userInfo
       this.loaded = true
     },
     reset() {
