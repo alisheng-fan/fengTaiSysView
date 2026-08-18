@@ -13,7 +13,12 @@ export default defineConfig(({ mode }) => {
       vue(),
       AutoImport({ imports: ['vue', 'vue-router', 'pinia'] }),
       Components({ resolvers: [ElementPlusResolver()] }),
-      viteMockServe({ mockPath: 'mock', enable: env.VITE_USE_MOCK === 'true' }),
+      // ignore: 排除 mock 目录下的测试文件，避免把导入 vitest 的用例打包进 mock 服务
+      viteMockServe({
+        mockPath: 'mock',
+        enable: env.VITE_USE_MOCK === 'true',
+        ignore: /\.(test|spec)\.ts$/,
+      }),
     ],
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
