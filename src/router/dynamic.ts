@@ -1,11 +1,14 @@
 import type { RouteRecordRaw } from 'vue-router'
 import type { MenuNode } from '@/types'
 
-/** 按组件路径懒加载 src/views 下的页面 */
-const viewModules = import.meta.glob('@/views/**/*.vue')
+/** 按组件路径懒加载 src/views 下的页面（相对路径 glob，避免 Windows 盘符大小写导致路径解析失败） */
+const viewModules = import.meta.glob('../views/**/*.vue')
 
 function resolveComponent(componentPath: string) {
-  return viewModules[`/src/views/${componentPath}.vue`]
+  const key = Object.keys(viewModules).find((k) => k.endsWith(`/views/${componentPath}.vue`))
+  // 视图文件尚未创建时返回 undefined（路由仍登记，供测试与后续页面复用）；
+  // 断言仅用于满足 vue-router 的 component 类型，运行时行为与旧版一致。
+  return (key ? viewModules[key] : undefined) as () => Promise<{ [key: string]: any }>
 }
 
 /**
