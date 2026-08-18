@@ -110,7 +110,7 @@ onMounted(load)
       ]"
     />
 
-    <el-dialog v-model="permVisible" title="分配权限" width="420px">
+    <el-dialog v-model="permVisible" title="分配权限" width="420px" destroy-on-close>
       <el-tree
         ref="permTreeRef"
         :data="adminMenus"
