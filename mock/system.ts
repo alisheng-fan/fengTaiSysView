@@ -62,9 +62,24 @@ const users: UserItem[] = [
 
 const ok = (data: unknown) => ({ code: 0, message: 'ok', data })
 
+/** 扁平 depts → 树形（按 parentId 嵌套） */
+export function buildDeptTree(depts: DeptItem[]): DeptItem[] {
+  const map = new Map<string, DeptItem>()
+  depts.forEach((d) => map.set(d.id, { ...d, children: [] }))
+  const roots: DeptItem[] = []
+  map.forEach((d) => {
+    if (d.parentId && map.has(d.parentId)) {
+      map.get(d.parentId)!.children!.push(d)
+    } else {
+      roots.push(d)
+    }
+  })
+  return roots
+}
+
 export default [
   // ---------- 部门 ----------
-  { url: '/api/system/dept/list', method: 'get', response: () => ok(depts) },
+  { url: '/api/system/dept/list', method: 'get', response: () => ok(buildDeptTree(depts)) },
   {
     url: '/api/system/dept',
     method: 'post',
