@@ -35,7 +35,7 @@ watch(
 )
 
 function rulesOf(field: FormField) {
-  return field.rules ?? [{ required: true, message: `请输入${field.label}`, trigger: 'blur' }]
+  return field.rules ?? []
 }
 
 async function handleConfirm() {
