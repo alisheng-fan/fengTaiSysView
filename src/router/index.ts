@@ -43,7 +43,10 @@ router.beforeEach(async (to) => {
   const permissionStore = usePermissionStore()
   if (!permissionStore.loaded) {
     try {
-      await permissionStore.loadPermission()
+      const userInfo = await permissionStore.loadPermission()
+      if (userInfo) {
+        useUserStore().userInfo = userInfo
+      }
       permissionStore.dynamicRoutes.forEach((r) => router.addRoute('Layout', r))
       // 不能返回 {...to, replace: true}：redirect 会在守卫前解析，动态路由尚未注册时
       // /dashboard 已命中 catch-all，to.name='NotFound' 被带上后重导航会按 name 再次解析到 404。
