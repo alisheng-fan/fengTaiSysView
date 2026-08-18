@@ -1497,7 +1497,6 @@ git commit -m "feat: user 与 permission 状态层"
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { usePermissionStore } from '@/stores/permission'
 import { getToken } from '@/utils/auth'
-import MainLayout from '@/layouts/MainLayout/index.vue'
 import { buildRoutes } from './dynamic'
 
 export const constantRoutes: RouteRecordRaw[] = [
@@ -1509,7 +1508,8 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
   {
     path: '/',
-    component: MainLayout,
+    // 懒加载：MainLayout 由 Task 8 创建；懒加载使 Task 7 阶段登录页可独立验证
+    component: () => import('@/layouts/MainLayout/index.vue'),
     redirect: '/dashboard',
     name: 'Layout',
     children: [],
