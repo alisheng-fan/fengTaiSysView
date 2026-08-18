@@ -1,3 +1,5 @@
+import type { PageParams } from '@/types'
+
 export interface Column {
   prop: string
   label: string
@@ -18,4 +20,4 @@ export interface SearchField {
   placeholder?: string
 }
 
-export type FetchApi = (params: Record<string, unknown>) => Promise<{ list: unknown[]; total: number }>
+export type FetchApi = (params: PageParams) => Promise<{ list: unknown[]; total: number }>
