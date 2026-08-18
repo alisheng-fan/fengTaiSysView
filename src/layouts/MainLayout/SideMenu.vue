@@ -8,7 +8,10 @@ import type { MenuNode } from '@/types'
 // 根调用（menus 未传）渲染唯一的 <el-menu>；递归调用只渲染菜单项，项从单个
 // el-menu 的 provide 中注入 rootMenu。router 模式下点击 index（菜单 path）即导航，
 // default-active 用当前路由路径高亮并自动展开父级子菜单。
-const props = withDefaults(defineProps<{ menus?: MenuNode[] }>(), { menus: undefined })
+const props = withDefaults(defineProps<{ menus?: MenuNode[]; collapse?: boolean }>(), {
+  menus: undefined,
+  collapse: false,
+})
 
 const route = useRoute()
 const permissionStore = usePermissionStore()
@@ -21,7 +24,13 @@ const menus = computed(() => props.menus ?? permissionStore.menus)
 </script>
 
 <template>
-  <el-menu v-if="isRoot" :default-active="route.path" router>
+  <el-menu
+    v-if="isRoot"
+    :default-active="route.path"
+    router
+    :collapse="collapse"
+    :collapse-transition="false"
+  >
     <SideMenu :menus="menus" />
   </el-menu>
   <template v-else>
