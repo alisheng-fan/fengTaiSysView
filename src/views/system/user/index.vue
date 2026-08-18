@@ -20,6 +20,14 @@ async function loadOptions() {
   roles.value = await getRoleList()
 }
 
+/** 部门树 → 扁平选项 */
+function flattenDepts(depts: DeptItem[]): { label: string; value: string }[] {
+  return depts.flatMap((d) => [
+    { label: d.name, value: d.id },
+    ...(d.children ? flattenDepts(d.children) : []),
+  ])
+}
+
 function openAdd() {
   isEdit.value = false
   form.value = { username: '', nickname: '', deptId: null, roleIds: [], phone: '', email: '', status: 1 }
@@ -114,7 +122,7 @@ onMounted(loadOptions)
         { prop: 'nickname', label: '昵称', rules: [{ required: true, message: '请输入昵称', trigger: 'blur' }] },
         { prop: 'phone', label: '手机号' },
         { prop: 'email', label: '邮箱' },
-        { prop: 'deptId', label: '所属部门', type: 'select', options: depts.map((d) => ({ label: d.name, value: d.id })) },
+        { prop: 'deptId', label: '所属部门', type: 'select', options: flattenDepts(depts) },
         { prop: 'roleIds', label: '角色', type: 'select', multiple: true, options: roles.map((r) => ({ label: r.name, value: r.id })) },
       ]"
     />
