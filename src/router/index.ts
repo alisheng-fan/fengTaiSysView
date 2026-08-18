@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { usePermissionStore } from '@/stores/permission'
+import { useUserStore } from '@/stores/user'
 import { getToken } from '@/utils/auth'
 
 export const constantRoutes: RouteRecordRaw[] = [
@@ -46,6 +47,9 @@ router.beforeEach(async (to) => {
       permissionStore.dynamicRoutes.forEach((r) => router.addRoute('Layout', r))
       return { ...to, replace: true }
     } catch {
+      // 权限加载失败（如网络/业务错误）时清空凭证，避免 token 仍在导致
+      // 下一轮守卫把 /login 弹回 / 形成无限重定向循环。401 由请求层自行清理。
+      useUserStore().reset()
       return { path: '/login', query: { redirect: to.fullPath } }
     }
   }
