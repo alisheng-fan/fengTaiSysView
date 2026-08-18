@@ -33,6 +33,10 @@ const router = createRouter({
 
 const WHITE_LIST = ['/login']
 
+// 模块级记录已注册的动态路由名：permission store 在登出时会被 reset，
+// 模块级数组得以跨会话保留，使下一次登录能先移除上一个账号注册的路由（removeRoute 以 name 为凭）。
+let addedRouteNames: string[] = []
+
 router.beforeEach(async (to) => {
   if (!getToken()) {
     if (WHITE_LIST.includes(to.path)) return true
@@ -44,10 +48,15 @@ router.beforeEach(async (to) => {
   if (!permissionStore.loaded) {
     try {
       const userInfo = await permissionStore.loadPermission()
+      // 移除上一个会话（如另一个账号）残留的动态路由，再重新注册，防止跨账号越权
+      addedRouteNames.forEach((n) => router.removeRoute(n))
+      addedRouteNames = permissionStore.dynamicRoutes
+        .map((r) => r.name)
+        .filter((n): n is string => Boolean(n))
+      permissionStore.dynamicRoutes.forEach((r) => router.addRoute('Layout', r))
       if (userInfo) {
         useUserStore().userInfo = userInfo
       }
-      permissionStore.dynamicRoutes.forEach((r) => router.addRoute('Layout', r))
       // 不能返回 {...to, replace: true}：redirect 会在守卫前解析，动态路由尚未注册时
       // /dashboard 已命中 catch-all，to.name='NotFound' 被带上后重导航会按 name 再次解析到 404。
       // 只保留 path/query/hash 让重导航基于更新后的 matcher 重新解析。
