@@ -45,7 +45,12 @@ function rulesOf(field: FormField) {
 
 async function handleSubmit() {
   if (!formRef.value) return
-  await formRef.value.validate()
+  try {
+    await formRef.value.validate()
+  } catch {
+    // 校验不通过：表单已展示错误提示，终止提交
+    return
+  }
   submitting.value = true
   try {
     await props.submitApi({ ...form })
