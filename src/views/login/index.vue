@@ -1,25 +1,40 @@
 <script setup lang="ts">
+/**
+ * 登录页
+ * - 账号密码登录：校验表单后调用 userStore.login
+ * - 成功后按 query.redirect 跳转（未登录访问受保护页面时回跳原地址）
+ */
 import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 
+/** 路由实例（登录成功后跳转用） */
 const router = useRouter()
+/** 路由实例（读取 redirect 查询参数） */
 const route = useRoute()
+/** 用户状态仓库（负责登录请求与用户信息存储） */
 const userStore = useUserStore()
 
 // import.meta 不能直接出现在模板插值中（Vue 模板表达式解析器不支持），
 // 需在 script 中取值后再引用。见 task-7 报告。
 const appTitle = import.meta.env.VITE_APP_TITLE
 
+/** 登录表单实例（用于触发整体校验） */
 const formRef = ref()
+/** 登录按钮 loading 状态 */
 const loading = ref(false)
+/** 登录表单数据（演示环境预填账号密码） */
 const form = reactive({ username: 'admin', password: 'admin123' })
+/** 登录表单校验规则 */
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 }
 
+/**
+ * 登录：校验表单 → 调用登录接口 → 成功后按 redirect 跳转
+ */
 async function handleLogin() {
   if (!formRef.value) return
   await formRef.value.validate()

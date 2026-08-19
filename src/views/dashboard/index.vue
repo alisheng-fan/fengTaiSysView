@@ -1,7 +1,13 @@
 <script setup lang="ts">
+/**
+ * 工作台首页
+ * - 顶部统计卡片：部门/角色/用户/在线用户数
+ * - 下方图表：各部门人数柱状图、近 7 日访问趋势折线图
+ */
 import type { EChartsOption } from 'echarts'
 import ChartBox from '@/components/ChartBox/index.vue'
 
+/** 统计卡片数据（文案与数值） */
 const stats = [
   { label: '部门数', value: 4 },
   { label: '角色数', value: 2 },
@@ -9,6 +15,7 @@ const stats = [
   { label: '在线用户', value: 1 },
 ]
 
+/** 各部门人数柱状图配置 */
 const deptBarOption: EChartsOption = {
   title: { text: '各部门人数' },
   tooltip: {},
@@ -17,6 +24,7 @@ const deptBarOption: EChartsOption = {
   series: [{ type: 'bar', data: [18, 25, 12], itemStyle: { color: '#409eff' } }],
 }
 
+/** 近 7 日访问趋势折线图配置 */
 const trendLineOption: EChartsOption = {
   title: { text: '近 7 日访问趋势' },
   tooltip: { trigger: 'axis' },

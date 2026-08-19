@@ -1,16 +1,27 @@
 <script setup lang="ts">
+/**
+ * 修改密码页
+ * - 校验原密码、新密码（至少 6 位、不能与原密码相同）与确认密码
+ * - 修改成功后登出并跳回登录页重新登录
+ */
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { changePassword } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 
+/** 路由实例（修改成功后跳回登录页） */
 const router = useRouter()
+/** 用户状态仓库（用于登出清空用户信息） */
 const userStore = useUserStore()
+/** 密码表单实例（用于触发整体校验） */
 const formRef = ref()
+/** 提交按钮 loading 状态 */
 const submitting = ref(false)
+/** 修改密码表单数据 */
 const form = reactive({ oldPassword: '', newPassword: '', confirmPassword: '' })
 
+/** 密码表单校验规则（含自定义校验） */
 const rules = {
   oldPassword: [{ required: true, message: '请输入原密码', trigger: 'blur' }],
   newPassword: [
@@ -36,6 +47,9 @@ const rules = {
   ],
 }
 
+/**
+ * 修改密码：校验表单 → 调用接口 → 成功后登出并跳转登录页
+ */
 async function handleSubmit() {
   if (!formRef.value) return
   try {

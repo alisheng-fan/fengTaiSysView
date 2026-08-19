@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * 角色管理页
+ * - 角色列表 + 新增/编辑/删除
+ * - 分配权限：树形勾选菜单权限，保存时由叶子节点重建 menuIds
+ */
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createRole, deleteRole, getAllMenuTree, getRoleList, updateRole } from '@/api/system'
@@ -6,23 +11,35 @@ import ProForm from '@/components/ProForm/index.vue'
 import type { MenuNode, RoleItem } from '@/types'
 import { buildMenuIdsFromLeaves } from '@/utils/menu'
 
+/** 角色列表数据 */
 const list = ref<RoleItem[]>([])
+/** 列表加载中标志（el-table v-loading） */
 const loading = ref(false)
+/** 新增/编辑角色弹窗可见性 */
 const dialogVisible = ref(false)
+/** 当前弹窗是否为编辑模式（true=编辑，false=新增） */
 const isEdit = ref(false)
+/** 新增/编辑弹窗的表单数据（编辑时整行角色回填） */
 const form = ref<Partial<RoleItem>>({})
 
 // ---------- 分配权限弹窗 ----------
+/** 分配权限弹窗可见性 */
 const permVisible = ref(false)
+/** 权限树组件实例（读取勾选节点） */
 const permTreeRef = ref()
+/** 正在分配权限的角色 */
 const currentRole = ref<RoleItem | null>(null)
+/** 权限树预勾选的节点 id 列表（仅叶子节点） */
 const checkedKeys = ref<string[]>([])
+/** 菜单权限树数据 */
 const menuTree = ref<MenuNode[]>([])
 
+/** 加载菜单权限树 */
 async function loadMenuTree() {
   menuTree.value = await getAllMenuTree()
 }
 
+/** 加载角色列表 */
 async function load() {
   loading.value = true
   try {
@@ -32,27 +49,42 @@ async function load() {
   }
 }
 
+/** 打开"新增角色"弹窗，重置表单为默认值 */
 function openAdd() {
   isEdit.value = false
   form.value = { name: '', code: '', sort: 1, status: 1, remark: '' }
   dialogVisible.value = true
 }
 
+/**
+ * 打开"编辑角色"弹窗，回填角色数据
+ * @param row 当前行角色数据
+ */
 function openEdit(row: RoleItem) {
   isEdit.value = true
   form.value = { ...row }
   dialogVisible.value = true
 }
 
+/**
+ * 新增/编辑弹窗提交回调（由 ProForm submitApi 调用）
+ * @param values 弹窗表单提交的字段值
+ */
 async function handleSubmit(values: Record<string, unknown>) {
   if (isEdit.value) {
+    // 编辑：以原角色为基础合并新值（保留 id 等字段）
     await updateRole({ ...(form.value as RoleItem), ...values } as RoleItem)
   } else {
+    // 新增：提交表单值创建角色
     await createRole(values as Partial<RoleItem>)
   }
   load()
 }
 
+/**
+ * 删除角色（二次确认后调用接口）
+ * @param row 当前行角色数据
+ */
 async function handleDelete(row: RoleItem) {
   await ElMessageBox.confirm(`确定删除角色「${row.name}」？`, '提示', { type: 'warning' })
   await deleteRole(row.id)
@@ -60,6 +92,10 @@ async function handleDelete(row: RoleItem) {
   load()
 }
 
+/**
+ * 打开"分配权限"弹窗，预勾选该角色已拥有的叶子权限
+ * @param row 当前行角色数据
+ */
 function openPerm(row: RoleItem) {
   currentRole.value = row
   // 仅用叶子节点 id 预勾选：父节点级联会把整组勾满，显示不符
@@ -70,6 +106,9 @@ function openPerm(row: RoleItem) {
   permVisible.value = true
 }
 
+/**
+ * 保存权限：取树形勾选的叶子节点，重建父级 menuIds 后更新角色
+ */
 async function savePerm() {
   if (!currentRole.value) return
   const leafKeys = (permTreeRef.value?.getCheckedKeys(true) ?? []) as string[]

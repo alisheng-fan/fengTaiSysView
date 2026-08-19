@@ -1,16 +1,27 @@
 <script setup lang="ts">
+/**
+ * 部门管理页
+ * - 树形部门列表（children 嵌套）+ 新增/编辑/删除
+ * - 支持新增子级部门（openAdd 携带父级 id）
+ */
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createDept, deleteDept, getDeptList, updateDept } from '@/api/system'
 import ProForm from '@/components/ProForm/index.vue'
 import type { DeptItem } from '@/types'
 
+/** 部门列表数据（树形结构） */
 const list = ref<DeptItem[]>([])
+/** 列表加载中标志（el-table v-loading） */
 const loading = ref(false)
+/** 新增/编辑部门弹窗可见性 */
 const dialogVisible = ref(false)
+/** 当前弹窗是否为编辑模式（true=编辑，false=新增） */
 const isEdit = ref(false)
+/** 新增/编辑弹窗的表单数据（编辑时整行部门回填） */
 const form = reactive<Partial<DeptItem>>({})
 
+/** 加载部门列表 */
 async function load() {
   loading.value = true
   try {
@@ -20,27 +31,45 @@ async function load() {
   }
 }
 
+/**
+ * 打开"新增部门"弹窗，重置表单为默认值
+ * @param parentId 父级部门 id（新增子级时传入，缺省为顶级）
+ */
 function openAdd(parentId: string | null = null) {
   isEdit.value = false
   Object.assign(form, { parentId, name: '', sort: 1, status: 1, leader: '', phone: '' })
   dialogVisible.value = true
 }
 
+/**
+ * 打开"编辑部门"弹窗，回填部门数据
+ * @param row 当前行部门数据
+ */
 function openEdit(row: DeptItem) {
   isEdit.value = true
   Object.assign(form, { ...row })
   dialogVisible.value = true
 }
 
+/**
+ * 新增/编辑弹窗提交回调（由 ProForm submitApi 调用）
+ * @param values 弹窗表单提交的字段值
+ */
 async function handleSubmit(values: Record<string, unknown>) {
   if (isEdit.value) {
+    // 编辑：以原部门为基础合并新值（保留 id 等字段）
     await updateDept({ ...(form as DeptItem), ...values } as DeptItem)
   } else {
+    // 新增：提交表单值创建部门
     await createDept(values as Partial<DeptItem>)
   }
   load()
 }
 
+/**
+ * 删除部门（二次确认后调用接口）
+ * @param row 当前行部门数据
+ */
 async function handleDelete(row: DeptItem) {
   await ElMessageBox.confirm(`确定删除部门「${row.name}」？`, '提示', { type: 'warning' })
   await deleteDept(row.id)

@@ -1,4 +1,9 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+/**
+ * 404 页面
+ * - 路由未匹配时的兜底页，提供返回首页入口
+ */
+</script>
 
 <template>
   <div class="not-found">

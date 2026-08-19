@@ -1,16 +1,27 @@
 <script setup lang="ts">
+/**
+ * 节点管理页
+ * - 节点列表（名称/排序/状态/字段数）+ 新增/编辑/删除
+ * - 字段配置编辑器：为每个节点配置动态填报表单的字段（标签/字段名/类型/必填/选项）
+ */
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createNode, deleteNode, getNodeList, updateNode } from '@/api/system'
 import ProForm from '@/components/ProForm/index.vue'
 import type { FieldConfig, FieldType, NodeItem } from '@/types'
 
+/** 节点列表数据 */
 const list = ref<NodeItem[]>([])
+/** 列表加载中标志（el-table v-loading） */
 const loading = ref(false)
+/** 新增/编辑节点弹窗可见性 */
 const dialogVisible = ref(false)
+/** 当前弹窗是否为编辑模式（true=编辑，false=新增） */
 const isEdit = ref(false)
+/** 新增/编辑弹窗的表单数据（编辑时整行节点回填） */
 const form = reactive<Partial<NodeItem>>({})
 
+/** 加载节点列表 */
 async function load() {
   loading.value = true
   try {
@@ -20,27 +31,42 @@ async function load() {
   }
 }
 
+/** 打开"新增节点"弹窗，重置表单为默认值 */
 function openAdd() {
   isEdit.value = false
   Object.assign(form, { name: '', sort: 1, status: 1 })
   dialogVisible.value = true
 }
 
+/**
+ * 打开"编辑节点"弹窗，回填节点数据
+ * @param row 当前行节点数据
+ */
 function openEdit(row: NodeItem) {
   isEdit.value = true
   Object.assign(form, { ...row })
   dialogVisible.value = true
 }
 
+/**
+ * 新增/编辑弹窗提交回调（由 ProForm submitApi 调用）
+ * @param values 弹窗表单提交的字段值（name/sort/status）
+ */
 async function handleSubmit(values: Record<string, unknown>) {
   if (isEdit.value) {
+    // 编辑：以原节点为基础合并新值（保留 id/fields 等字段）
     await updateNode({ ...(form as NodeItem), ...values } as NodeItem)
   } else {
+    // 新增：提交表单值创建节点（fields 默认空数组）
     await createNode(values as Partial<NodeItem>)
   }
   load()
 }
 
+/**
+ * 删除节点（二次确认后调用接口）
+ * @param row 当前行节点数据
+ */
 async function handleDelete(row: NodeItem) {
   await ElMessageBox.confirm(`确定删除节点「${row.name}」？`, '提示', { type: 'warning' })
   await deleteNode(row.id)
@@ -49,10 +75,20 @@ async function handleDelete(row: NodeItem) {
 }
 
 // ---------- 字段配置编辑器 ----------
+/** 字段配置弹窗可见性 */
 const fieldVisible = ref(false)
+/**
+ * 正在编辑的字段行。
+ * optionsText 为编辑器内专用字段（textarea 每行一个选项），保存时转成 options，不持久化
+ */
 const fieldRows = ref<(FieldConfig & { optionsText?: string })[]>([])
+/** 正在配置字段的节点 */
 const editingNode = ref<NodeItem | null>(null)
 
+/**
+ * 打开"配置字段"弹窗，把节点的 options 还原为编辑器用的 optionsText（每行一个）
+ * @param row 当前行节点数据
+ */
 function openFieldConfig(row: NodeItem) {
   editingNode.value = row
   fieldRows.value = row.fields.map((f) => ({
@@ -62,24 +98,35 @@ function openFieldConfig(row: NodeItem) {
   fieldVisible.value = true
 }
 
+/** 添加一行空白字段（prop 默认 field_N） */
 function addFieldRow() {
   fieldRows.value.push({ prop: `field_${fieldRows.value.length + 1}`, label: '', type: 'input' })
 }
 
+/**
+ * 删除指定行的字段
+ * @param index 字段在 fieldRows 中的下标
+ */
 function removeFieldRow(index: number) {
   fieldRows.value.splice(index, 1)
 }
 
+/**
+ * 保存字段配置：校验（标签/字段名非空、字段名唯一）→ select/radio 的 optionsText 转 options → 更新节点
+ */
 async function saveFieldConfig() {
+  // 校验 1：标签与字段名不能为空
   const empty = fieldRows.value.find((f) => !f.label.trim() || !f.prop.trim())
   if (empty) {
     ElMessage.warning('字段的标签和字段名不能为空')
     return
   }
+  // 校验 2：字段名不能重复（避免填报页多个字段共用一个 key 导致数据覆盖）
   if (new Set(fieldRows.value.map((f) => f.prop.trim())).size !== fieldRows.value.length) {
     ElMessage.warning('字段名不能重复')
     return
   }
+  // 把编辑行转成持久化的 FieldConfig（去掉编辑器专用的 optionsText）
   const finalRows: FieldConfig[] = fieldRows.value.map((row) => {
     const base: FieldConfig = {
       prop: row.prop,
@@ -87,6 +134,7 @@ async function saveFieldConfig() {
       type: row.type,
       required: row.required ?? false,
     }
+    // 下拉/单选：把"每行一个选项"的文本转成 options 数组
     const isChoice = row.type === 'select' || row.type === 'radio'
     if (isChoice) {
       base.options = (row.optionsText ?? '')
@@ -98,12 +146,14 @@ async function saveFieldConfig() {
     return base
   })
   if (!editingNode.value) return
+  // 更新节点并携带新的字段配置
   await updateNode({ ...editingNode.value, fields: finalRows })
   ElMessage.success('字段配置已保存')
   fieldVisible.value = false
   load()
 }
 
+/** 字段类型 → 中文标签（字段配置编辑器的类型下拉用） */
 const typeLabel: Record<FieldType, string> = {
   input: '输入框',
   textarea: '多行文本',
