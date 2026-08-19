@@ -4,6 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { createRole, deleteRole, getAllMenuTree, getRoleList, updateRole } from '@/api/system'
 import ProForm from '@/components/ProForm/index.vue'
 import type { MenuNode, RoleItem } from '@/types'
+import { buildMenuIdsFromLeaves } from '@/utils/menu'
 
 const list = ref<RoleItem[]>([])
 const loading = ref(false)
@@ -71,16 +72,8 @@ function openPerm(row: RoleItem) {
 
 async function savePerm() {
   if (!currentRole.value) return
-  const leafKeys = (permTreeRef.value?.getCheckedKeys({ leafOnly: true }) ?? []) as string[]
-  const nodeKeys = leafKeys.filter((id) => id.startsWith('n'))
-  const sysKeys = leafKeys.filter((id) => !id.startsWith('n'))
-  const menuIds: string[] = ['1']
-  if (sysKeys.some((id) => id !== '1')) {
-    menuIds.push('2', ...sysKeys.filter((id) => id !== '1'))
-  }
-  if (nodeKeys.length) {
-    menuIds.push('3', ...nodeKeys)
-  }
+  const leafKeys = (permTreeRef.value?.getCheckedKeys(true) ?? []) as string[]
+  const menuIds = buildMenuIdsFromLeaves(leafKeys)
   await updateRole({ ...currentRole.value, menuIds })
   ElMessage.success('权限已更新')
   permVisible.value = false
