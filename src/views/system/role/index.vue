@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { createRole, deleteRole, getRoleList, updateRole } from '@/api/system'
+import { createRole, deleteRole, getAllMenuTree, getRoleList, updateRole } from '@/api/system'
 import ProForm from '@/components/ProForm/index.vue'
-import type { RoleItem } from '@/types'
-import { adminMenus } from '../../../../mock/menus'
+import type { MenuNode, RoleItem } from '@/types'
 
 const list = ref<RoleItem[]>([])
 const loading = ref(false)
@@ -17,6 +16,11 @@ const permVisible = ref(false)
 const permTreeRef = ref()
 const currentRole = ref<RoleItem | null>(null)
 const checkedKeys = ref<string[]>([])
+const menuTree = ref<MenuNode[]>([])
+
+async function loadMenuTree() {
+  menuTree.value = await getAllMenuTree()
+}
 
 async function load() {
   loading.value = true
@@ -69,7 +73,10 @@ async function savePerm() {
   load()
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  loadMenuTree()
+})
 </script>
 
 <template>
@@ -113,7 +120,7 @@ onMounted(load)
     <el-dialog v-model="permVisible" title="分配权限" width="420px" destroy-on-close>
       <el-tree
         ref="permTreeRef"
-        :data="adminMenus"
+        :data="menuTree"
         show-checkbox
         node-key="id"
         :default-checked-keys="checkedKeys"
