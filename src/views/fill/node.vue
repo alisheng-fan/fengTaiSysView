@@ -22,6 +22,7 @@ async function submit(values: Record<string, unknown>): Promise<void> {
   <el-card>
     <template #header>{{ title }}</template>
     <ProForm
+      :key="nodeId"
       :model-value="false"
       :dialog="false"
       :title="title"
