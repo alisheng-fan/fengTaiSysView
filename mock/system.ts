@@ -19,24 +19,8 @@ const depts: DeptItem[] = [
 ]
 
 const roles: RoleItem[] = [
-  {
-    id: '1',
-    name: '系统管理员',
-    code: 'admin',
-    sort: 1,
-    status: 1,
-    menuIds: ['1', '2', '21', '22', '23'],
-    remark: '全部权限',
-  },
-  {
-    id: '2',
-    name: '普通用户',
-    code: 'user',
-    sort: 2,
-    status: 1,
-    menuIds: ['1'],
-    remark: '仅仪表盘',
-  },
+  { id: '1', name: '系统管理员', code: 'admin', sort: 1, status: 1, menuIds: ['1', '2', '21', '22', '23', '24', '25', '3', 'n1', 'n2'], remark: '全部权限' },
+  { id: '2', name: '普通用户', code: 'user', sort: 2, status: 1, menuIds: ['1', '2', '25', '3', 'n1'], remark: '仅仪表盘+修改密码+台账' },
 ]
 
 const users: UserItem[] = [
