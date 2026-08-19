@@ -113,7 +113,26 @@ export interface MenuNode {
 }
 ```
 
-- [ ] **Step 2: 扩展 system 接口层**
+- [ ] **Step 2: 扩展 ProForm FormField 类型（date/radio）**
+
+`src/components/ProForm/types.ts`：
+
+```ts
+export interface FormField {
+  prop: string
+  label: string
+  type?: 'input' | 'textarea' | 'number' | 'select' | 'date' | 'radio'
+  options?: { label: string; value: string | number }[]
+  placeholder?: string
+  rules?: FormItemRule[]
+  /** 多选（select 时生效） */
+  multiple?: boolean
+}
+```
+
+（`toFormFields` 返回 `FormField[]`，其 `type` 来自 `FieldType`（含 date/radio），故 FormField.type 必须先扩展，T1 的 build 才能通过。T2 不再改此类型。）
+
+- [ ] **Step 3: 扩展 system 接口层**
 
 `src/api/system.ts` 末尾追加：
 
@@ -145,7 +164,7 @@ export function getAllMenuTree(): Promise<MenuNode[]> {
 
 （注意：`submitNodeData` 的 url 是 `/node/{id}/submit`，与 mock 路由 `/api/node/:id/submit` 对应。）
 
-- [ ] **Step 3: 扩展 auth 接口层**
+- [ ] **Step 4: 扩展 auth 接口层**
 
 `src/api/auth.ts` 追加：
 
@@ -157,7 +176,7 @@ export function changePassword(data: ChangePasswordParams): Promise<null> {
 }
 ```
 
-- [ ] **Step 4: 写字段转换纯函数 + 失败测试**
+- [ ] **Step 5: 写字段转换纯函数 + 失败测试**
 
 `src/utils/form.test.ts`：
 
@@ -195,12 +214,12 @@ describe('utils/form toFormFields', () => {
 })
 ```
 
-- [ ] **Step 5: 运行测试确认失败**
+- [ ] **Step 6: 运行测试确认失败**
 
 运行：`npm run test -- src/utils/form.test.ts`
 预期：FAIL，`./form` 不存在。
 
-- [ ] **Step 6: 实现转换函数**
+- [ ] **Step 7: 实现转换函数**
 
 `src/utils/form.ts`：
 
@@ -226,18 +245,18 @@ export function toFormFields(fields: FieldConfig[]): FormField[] {
 }
 ```
 
-- [ ] **Step 7: 运行测试确认通过**
+- [ ] **Step 8: 运行测试确认通过**
 
 运行：`npm run test -- src/utils/form.test.ts`
 预期：PASS（3 个用例）。
 
-- [ ] **Step 8: build 验证 + Commit**
+- [ ] **Step 9: build 验证 + Commit**
 
 运行：`npm run build`
 预期：`vue-tsc` + vite 通过。
 
 ```bash
-git add src/types src/api src/utils/form.ts src/utils/form.test.ts
+git add src/types src/components/ProForm/types.ts src/api src/utils/form.ts src/utils/form.test.ts
 git commit -m "feat: 节点/字段类型、接口层与字段转换纯函数"
 ```
 
@@ -253,22 +272,9 @@ git commit -m "feat: 节点/字段类型、接口层与字段转换纯函数"
 - Consumes: 无
 - Produces: `FormField.type` 增加 `'date' | 'radio'`；ProForm 增加 props `dialog?: boolean`（默认 true）、`successMessage?: string`（默认 '保存成功'）；`dialog=false` 时渲染整页表单 + 底部提交按钮，提交成功后重置表单并 emit `success`
 
-- [ ] **Step 1: 扩展 FormField 类型**
+- [ ] **Step 1: FormField 类型已就绪（Task 1 完成）**
 
-`src/components/ProForm/types.ts`：
-
-```ts
-export interface FormField {
-  prop: string
-  label: string
-  type?: 'input' | 'textarea' | 'number' | 'select' | 'date' | 'radio'
-  options?: { label: string; value: string | number }[]
-  placeholder?: string
-  rules?: FormItemRule[]
-  /** 多选（select 时生效） */
-  multiple?: boolean
-}
-```
+`FormField.type` 已在 Task 1 Step 2 扩展为含 `'date' | 'radio'`。本任务只改 ProForm 组件本身，不再动类型。
 
 - [ ] **Step 2: 重写 ProForm 组件**
 
@@ -433,12 +439,12 @@ git commit -m "feat: ProForm 扩展 date/radio 控件与整页模式"
   - mock 端点：`GET/POST/PUT/DELETE /api/system/node`、`GET /api/system/menu/all`、`POST /api/node/{id}/submit`
   - `mock/menus.ts` 导出 `dashboardMenu`/`systemGroup`/`businessGroup`/`allMenusForTree()`
 
-- [ ] **Step 1: 重构 mock/menus.ts**
+- [ ] **Step 1: 扩展 mock/menus.ts（保留旧导出 + 追加结构化导出）**
 
-`mock/menus.ts`（完整替换，导出结构化菜单供 /auth/me 动态构建与分配树使用）：
+在 `mock/menus.ts` **末尾追加**以下结构化导出。**保留原 `adminMenus`/`userMenus` 不变**——角色页（T8 前）与旧 `mock/auth.ts`（T4 前）仍引用它们，删除会导致中间态测试红。
 
 ```ts
-import type { MenuNode } from '@/types'
+// ---- T3 追加：节点/动态表单的结构化导出（adminMenus/userMenus 保留至 T4/T8 移除） ----
 
 export const dashboardMenu: MenuNode = {
   id: '1',
@@ -505,7 +511,7 @@ export const businessGroup: MenuNode = {
   children: [],
 }
 
-/** 完整可分配树：仪表盘 + 系统管理（全子节点）+ 业务填报（全部节点），供角色分配权限与 admin 登录使用 */
+/** 完整可分配树：仪表盘 + 系统管理（全子节点）+ 业务填报（全部节点），供角色分配权限与 admin 使用 */
 export function allMenusForTree(allNodes: MenuNode[]): MenuNode[] {
   return [
     dashboardMenu,
@@ -514,8 +520,6 @@ export function allMenusForTree(allNodes: MenuNode[]): MenuNode[] {
   ]
 }
 ```
-
-（原 `adminMenus`/`userMenus` 删除；角色管理页不再直接 import 它们，改在 Task 8 接入 `/api/system/menu/all`。）
 
 - [ ] **Step 2: 写 mock/nodes.ts + 测试（先失败）**
 
@@ -1344,6 +1348,7 @@ git commit -m "feat: 节点管理页与字段配置编辑器"
 
 ```ts
 import { getAllMenuTree } from '@/api/system'
+import type { MenuNode } from '@/types'
 ```
 
 删除 `import { adminMenus } from '../../../../mock/menus'`。`openPerm` 前确保树数据就绪：
@@ -1363,6 +1368,8 @@ function openPerm(row: RoleItem) {
 ```
 
 模板中 el-tree 的 `:data` 改为 `menuTree`；`onMounted` 里加 `loadMenuTree()`（与 `load()` 并行）。
+
+同时移除 `mock/menus.ts` 末尾已无人引用的 `adminMenus`/`userMenus` 导出（角色页已切换接口；auth 在 T4 已改用 buildMenuTree）——删除前 `grep -rn "adminMenus\|userMenus" --include="*.ts" --include="*.vue" src mock` 确认无引用。
 
 - [ ] **Step 2: 端到端权限验证**
 
@@ -1415,3 +1422,8 @@ git commit -m "feat: 角色分配权限接入完整菜单树"
 - 修改密码验证会临时改 mock 里 admin 密码，需在验证后改回（Task 5 Step 2）。
 - 角色分配操作改 mock 内存数据，重启 dev 恢复 seed（Task 8 Step 2 注明）。
 - mock/auth.test.ts 断言依赖 seed menuIds（admin 4 子节点 + 2 节点；user 仅 25 + n1），改 seed 需同步改断言。
+- T4 之后 admin 的菜单树含 节点管理(24)/修改密码(25) 路由，但对应页面在 T5/T7 才创建——期间点击是空白/未解析组件（与基座 T7/T8 中间态同型，预期）。
+
+**预检裁定（SDD ledger 记录）：**
+- T1 需先扩展 `FormField.type`（date/radio）再实现 `toFormFields`，否则 build 失败（FormField.type 不含 date/radio 时 `type: FieldType` 不可赋值）。
+- T3 保留 `adminMenus`/`userMenus` 旧导出至 T4（auth 重写）/T8（角色页切换 + 移除），避免中间态测试红。
