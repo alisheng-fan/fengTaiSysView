@@ -1,21 +1,32 @@
 <script setup lang="ts">
+/**
+ * 顶栏导航：折叠按钮 + 面包屑 + 用户信息下拉（退出登录）
+ * 折叠按钮通过 toggle 事件通知父布局切换侧栏
+ */
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import Breadcrumb from './Breadcrumb.vue'
 
+/** 向外派发侧栏折叠/展开的切换事件 */
 const emit = defineEmits<{ (e: 'toggle'): void }>()
 const router = useRouter()
 const userStore = useUserStore()
 
+/** 用户下拉可见性（用于高亮样式） */
 const dropdownVisible = ref(false)
 
+/** 显示昵称，缺省时回退到用户名 */
 const nickname = computed(() => userStore.userInfo?.nickname ?? userStore.userInfo?.username ?? '')
 const avatarSrc = computed(() => userStore.userInfo?.avatar ?? '')
 /** 无头像时显示昵称首字符 */
 const avatarText = computed(() => (avatarSrc.value ? '' : nickname.value.slice(0, 1)))
 
+/**
+ * 用户下拉菜单命令处理
+ * @param command 命令名（当前仅 logout）
+ */
 async function handleCommand(command: string) {
   if (command === 'logout') {
     await userStore.logout()

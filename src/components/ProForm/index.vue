@@ -1,4 +1,10 @@
 <script setup lang="ts">
+/**
+ * 通用 ProForm：按 fields 声明渲染表单，自动校验 + 提交
+ * 两种模式由 dialog prop 区分：
+ * - dialog=true（默认）：弹窗表单，取消/确定按钮在弹窗底部，提交成功自动关闭
+ * - dialog=false：整页表单，无弹窗外壳，底部自带提交按钮，提交成功重置表单
+ */
 import { reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormField } from './types'
@@ -22,16 +28,21 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
+/** el-form 实例（用于 validate / clearValidate） */
 const formRef = ref()
+/** 提交中标志（提交按钮 loading） */
 const submitting = ref(false)
+/** 表单数据（与 fields 的 prop 一一对应） */
 const form = reactive<Record<string, unknown>>({})
 
+/** 重置表单为 initialValues 并清除校验错误 */
 function resetForm() {
   Object.keys(form).forEach((k) => delete form[k])
   Object.assign(form, props.initialValues)
   formRef.value?.clearValidate?.()
 }
 
+// 弹窗打开时回填初始值（仅弹窗模式需要，页模式首次打开即初始化）
 watch(
   () => props.modelValue,
   (visible) => {
@@ -39,10 +50,15 @@ watch(
   },
 )
 
+/** 取字段声明的校验规则（未声明则为空数组） */
 function rulesOf(field: FormField) {
   return field.rules ?? []
 }
 
+/**
+ * 提交：先校验，通过后调用 submitApi；成功提示 + 派发 success 事件，
+ * 弹窗模式关闭弹窗、页模式重置表单
+ */
 async function handleSubmit() {
   if (!formRef.value) return
   try {
@@ -68,6 +84,7 @@ async function handleSubmit() {
   }
 }
 
+/** 对外暴露：reset 重置表单，submit 触发校验并提交 */
 defineExpose({ reset: resetForm, submit: handleSubmit })
 </script>
 

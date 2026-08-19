@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * 侧栏菜单：根据权限菜单递归渲染 el-menu
+ * - 根调用（menus 未传）渲染唯一的 <el-menu>，default-active 按当前路由高亮并自动展开父级
+ * - 递归调用只渲染菜单项，点击 index（菜单 path）由 router 模式导航
+ */
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePermissionStore } from '@/stores/permission'

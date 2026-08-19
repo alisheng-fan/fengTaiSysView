@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * 通用 ProTable：封装搜索表单 + 表格 + 分页
+ * - 通过 fetchApi 拉取数据，自带 loading / 分页 / 查询 / 重置
+ * - 表头支持插槽自定义渲染（Column.slot），外部可通过 ref 调用 load/refresh
+ */
 import { onMounted, reactive, ref } from 'vue'
 import type { Column, FetchApi, SearchField } from './types'
 
@@ -13,12 +18,18 @@ const props = withDefaults(
   { searchFields: () => [], rowKey: 'id', pageSizes: () => [10, 20, 50] },
 )
 
+/** 表格数据（fetchApi 返回的 list） */
 const tableData = ref<Record<string, unknown>[]>([])
+/** 加载中标志（el-table v-loading） */
 const loading = ref(false)
+/** 数据总条数（分页 total） */
 const total = ref(0)
+/** 搜索条件（key 为 searchFields 的 prop，查询时原样传给 fetchApi） */
 const query = reactive<Record<string, unknown>>({})
+/** 分页状态：当前页与每页条数 */
 const pagination = reactive({ page: 1, pageSize: 10 })
 
+/** 携带当前查询条件与分页参数请求列表 */
 async function load() {
   loading.value = true
   try {
@@ -30,11 +41,13 @@ async function load() {
   }
 }
 
+/** 查询：回到第一页再加载 */
 function handleSearch() {
   pagination.page = 1
   load()
 }
 
+/** 重置：清空所有搜索条件并回到第一页重新查询 */
 function handleReset() {
   Object.keys(query).forEach((k) => {
     query[k] = ''
@@ -42,17 +55,20 @@ function handleReset() {
   handleSearch()
 }
 
+/** 页码变化时按新页码加载 */
 function handlePageChange(page: number) {
   pagination.page = page
   load()
 }
 
+/** 每页条数变化时重置为第一页并重新加载 */
 function handleSizeChange(size: number) {
   pagination.pageSize = size
   pagination.page = 1
   load()
 }
 
+/** 对外暴露刷新方法（refresh 为 load 的别名） */
 defineExpose({ load, refresh: load })
 onMounted(load)
 </script>

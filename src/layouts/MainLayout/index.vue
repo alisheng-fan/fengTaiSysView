@@ -1,9 +1,14 @@
 <script setup lang="ts">
+/**
+ * 主布局：左侧折叠侧栏 + 顶部导航（Navbar/Breadcrumb/TagsView）+ 主内容区
+ * 侧栏宽度随 collapsed 在 220px 与 64px 之间切换
+ */
 import { ref } from 'vue'
 import SideMenu from './SideMenu.vue'
 import Navbar from './Navbar.vue'
 import TagsView from './TagsView.vue'
 
+/** 侧栏折叠状态（由 Navbar 的 toggle 事件切换） */
 const collapsed = ref(false)
 </script>
 
