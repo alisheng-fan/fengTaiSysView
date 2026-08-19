@@ -1,3 +1,10 @@
+/**
+ * Axios 封装：统一请求/响应处理
+ * - 请求前注入 token（Authorization: Bearer xxx）
+ * - 响应统一校验业务码 code（非 0 视为业务失败并弹错误提示）
+ * - 401 清除本地凭证并跳转登录页
+ * - request<T> 收窄返回类型，直接返回后端 data 字段
+ */
 import axios, {
   AxiosError,
   type AxiosInstance,
@@ -9,6 +16,7 @@ import { ElMessage } from 'element-plus'
 import type { ApiResult } from '@/types'
 import { getToken, removeToken } from '@/utils/auth'
 
+/** axios 实例：baseURL 取环境变量 VITE_API_BASE_URL，超时 15s */
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 15000,

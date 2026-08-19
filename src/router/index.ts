@@ -1,8 +1,14 @@
+/**
+ * 路由实例与全局前置守卫
+ * - 常量路由：登录页 / 主布局（懒加载）/ 404 兜底
+ * - 守卫流程：未登录跳登录页；首次进入时加载动态路由并注册到 Layout 下，防止跨账号越权
+ */
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { usePermissionStore } from '@/stores/permission'
 import { useUserStore } from '@/stores/user'
 import { getToken } from '@/utils/auth'
 
+/** 常量路由：与权限无关、应用启动即注册 */
 export const constantRoutes: RouteRecordRaw[] = [
   {
     path: '/login',
@@ -31,6 +37,7 @@ const router = createRouter({
   routes: constantRoutes,
 })
 
+/** 免登录白名单路径：无 token 时也可直接访问 */
 const WHITE_LIST = ['/login']
 
 // 模块级记录已注册的动态路由名：permission store 在登出时会被 reset，

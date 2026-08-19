@@ -1,9 +1,15 @@
+/**
+ * 动态路由构建：把后端下发的菜单树拍平为路由配置
+ * - 视图组件按 component 路径经 import.meta.glob 懒加载
+ * - 组节点（component 为空）只递归子级不生成路由；子路由用绝对 path 挂在 Layout 下
+ */
 import type { RouteRecordRaw } from 'vue-router'
 import type { MenuNode } from '@/types'
 
 /** 按组件路径懒加载 src/views 下的页面（相对路径 glob，避免 Windows 盘符大小写导致路径解析失败） */
 const viewModules = import.meta.glob('../views/**/*.vue')
 
+/** 把后端组件路径（相对 src/views）解析为懒加载组件；对应文件未创建时返回 undefined */
 function resolveComponent(componentPath: string) {
   const key = Object.keys(viewModules).find((k) => k.endsWith(`/views/${componentPath}.vue`))
   // 视图文件尚未创建时返回 undefined（路由仍登记，供测试与后续页面复用）；

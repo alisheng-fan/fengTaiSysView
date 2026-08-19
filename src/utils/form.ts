@@ -1,3 +1,4 @@
+/** 表单工具：节点字段配置（FieldConfig）与 ProForm 配置（FormField）之间的转换 */
 import type { FormField } from '@/components/ProForm/types'
 import type { FieldConfig } from '@/types'
 
