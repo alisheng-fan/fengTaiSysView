@@ -24,7 +24,13 @@ export function buildRoutes(menus: MenuNode[]): RouteRecordRaw[] {
         path: m.path,
         name: m.name,
         component: resolveComponent(m.component),
-        meta: { title: m.title ?? m.name, icon: m.icon, perms: m.perms },
+        meta: {
+          title: m.title ?? m.name,
+          icon: m.icon,
+          perms: m.perms,
+          nodeId: m.id,
+          fields: m.fields,
+        },
       })
     }
     if (m.children?.length) {

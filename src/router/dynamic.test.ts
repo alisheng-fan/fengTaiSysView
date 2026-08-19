@@ -63,4 +63,24 @@ describe('router/dynamic buildRoutes', () => {
     expect(routes[1].meta?.title).toBe('部门管理')
     expect(routes[1].meta?.perms).toEqual(['system:dept:add'])
   })
+
+  it('节点菜单的 meta 携带 nodeId 与 fields', () => {
+    const nodeMenus: MenuNode[] = [
+      {
+        id: 'n1',
+        parentId: '3',
+        name: 'Noden1',
+        title: '台账填报',
+        path: '/fill/n1',
+        component: 'fill/node',
+        icon: '',
+        sort: 1,
+        perms: [],
+        fields: [{ prop: 'street', label: '街道名称', type: 'input', required: true }],
+      },
+    ]
+    const routes = buildRoutes(nodeMenus)
+    expect(routes[0].meta?.nodeId).toBe('n1')
+    expect(routes[0].meta?.fields).toHaveLength(1)
+  })
 })
