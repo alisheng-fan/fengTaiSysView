@@ -2,18 +2,30 @@ import type { MockMethod } from 'vite-plugin-mock'
 import type { MenuNode } from '@/types'
 import { businessGroup, dashboardMenu, systemGroup, systemChildren } from './menus'
 import { buildNodeMenuChildren } from './nodes'
+import { roles } from './system'
 
 export interface MockUser {
   password: string
   nickname: string
   roles: string[]
   deptId: string | null
-  menuIds: string[]
 }
 
 export const users: Record<string, MockUser> = {
-  admin: { password: 'admin123', nickname: '系统管理员', roles: ['admin'], deptId: '1', menuIds: ['1', '2', '21', '22', '23', '24', '25', '3', 'n1', 'n2'] },
-  user: { password: 'user123', nickname: '普通用户', roles: ['user'], deptId: '1', menuIds: ['1', '2', '25', '3', 'n1'] },
+  admin: { password: 'admin123', nickname: '系统管理员', roles: ['admin'], deptId: '1' },
+  user: { password: 'user123', nickname: '普通用户', roles: ['user'], deptId: '1' },
+}
+
+/** 按用户角色解析 menuIds：合并该用户所有角色的 menuIds（读 live roles，分配链路实时生效） */
+export function menuIdsForUser(username: string): string[] {
+  const u = users[username]
+  if (!u) return []
+  const ids = new Set<string>()
+  for (const roleCode of u.roles) {
+    const role = roles.find((r) => r.code === roleCode)
+    role?.menuIds.forEach((id) => ids.add(id))
+  }
+  return [...ids]
 }
 
 /** 按角色 menuIds 动态构建菜单树：仪表盘 + 系统管理(只含勾选子节点) + 业务填报(只含勾选节点) */
@@ -41,7 +53,7 @@ export function resolveUserByToken(token: string): {
   if (!u) return null
   return {
     userInfo: { id: username, username, nickname: u.nickname, roles: u.roles, deptId: u.deptId },
-    menus: buildMenuTree(u.menuIds),
+    menus: buildMenuTree(menuIdsForUser(username)),
   }
 }
 

@@ -18,10 +18,17 @@ const depts: DeptItem[] = [
   { id: '121', parentId: '12', name: '平台组', sort: 1, status: 1 },
 ]
 
-const roles: RoleItem[] = [
+/**
+ * 共享可变状态：vite-plugin-mock 用 bundleRequire 独立打包每个 mock 文件，
+ * 直接 import 会把数据副本内联进各自的包、互不相通。用 globalThis 挂一份权威 roles，
+ * 使 /system/role 的保存与 /auth/me 的解析（auth.ts 经 './system' 读到同一引用）实时打通。
+ */
+const g = globalThis as unknown as { __fengtaiMockRoles?: RoleItem[] }
+
+export const roles: RoleItem[] = (g.__fengtaiMockRoles ??= [
   { id: '1', name: '系统管理员', code: 'admin', sort: 1, status: 1, menuIds: ['1', '2', '21', '22', '23', '24', '25', '3', 'n1', 'n2'], remark: '全部权限' },
   { id: '2', name: '普通用户', code: 'user', sort: 2, status: 1, menuIds: ['1', '2', '25', '3', 'n1'], remark: '仅仪表盘+修改密码+台账' },
-]
+])
 
 const users: UserItem[] = [
   {

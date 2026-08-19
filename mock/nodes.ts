@@ -1,7 +1,14 @@
 import type { MockMethod } from 'vite-plugin-mock'
 import type { MenuNode, NodeItem } from '@/types'
 
-export const nodes: NodeItem[] = [
+/**
+ * 共享可变状态：vite-plugin-mock 独立打包每个 mock 文件，直接 import 会把数据副本
+ * 内联进各自的包、互不相通。用 globalThis 挂一份权威 nodes，使 /system/node 的新增/停用
+ * 与 /auth/me 的 buildNodeMenuChildren（auth.ts 经 './nodes' 读到同一引用）实时打通。
+ */
+const g = globalThis as unknown as { __fengtaiMockNodes?: NodeItem[] }
+
+export const nodes: NodeItem[] = (g.__fengtaiMockNodes ??= [
   {
     id: 'n1', name: '台账填报', sort: 1, status: 1,
     fields: [
@@ -26,7 +33,7 @@ export const nodes: NodeItem[] = [
       { prop: 'note', label: '说明', type: 'textarea' },
     ],
   },
-]
+])
 
 /** 节点 → 业务填报子菜单（纯函数：按传入 nodeIds 过滤启用节点、按 sort 排序、携带 fields） */
 export function buildNodeMenuChildren(nodeIds: string[], source: NodeItem[] = nodes): MenuNode[] {
