@@ -76,6 +76,10 @@ async function saveFieldConfig() {
     ElMessage.warning('字段的标签和字段名不能为空')
     return
   }
+  if (new Set(fieldRows.value.map((f) => f.prop.trim())).size !== fieldRows.value.length) {
+    ElMessage.warning('字段名不能重复')
+    return
+  }
   const finalRows: FieldConfig[] = fieldRows.value.map((row) => {
     const base: FieldConfig = {
       prop: row.prop,
