@@ -61,13 +61,27 @@ async function handleDelete(row: RoleItem) {
 
 function openPerm(row: RoleItem) {
   currentRole.value = row
-  checkedKeys.value = row.menuIds ?? []
+  // 仅用叶子节点 id 预勾选：父节点级联会把整组勾满，显示不符
+  const parentIds = new Set(
+    menuTree.value.flatMap((n) => (n.children ?? []).map(() => n.id)),
+  )
+  checkedKeys.value = (row.menuIds ?? []).filter((id) => !parentIds.has(id))
   permVisible.value = true
 }
 
 async function savePerm() {
   if (!currentRole.value) return
-  await updateRole({ ...currentRole.value, menuIds: checkedKeys.value })
+  const leafKeys = (permTreeRef.value?.getCheckedKeys({ leafOnly: true }) ?? []) as string[]
+  const nodeKeys = leafKeys.filter((id) => id.startsWith('n'))
+  const sysKeys = leafKeys.filter((id) => !id.startsWith('n'))
+  const menuIds: string[] = ['1']
+  if (sysKeys.some((id) => id !== '1')) {
+    menuIds.push('2', ...sysKeys.filter((id) => id !== '1'))
+  }
+  if (nodeKeys.length) {
+    menuIds.push('3', ...nodeKeys)
+  }
+  await updateRole({ ...currentRole.value, menuIds })
   ElMessage.success('权限已更新')
   permVisible.value = false
   load()
