@@ -1,4 +1,4 @@
-# fengtaiSysView
+# fengTaiSysView
 
 丰台区企业级 RBAC 中后台前端基座（Vue 3 + TypeScript + Element Plus）。
 

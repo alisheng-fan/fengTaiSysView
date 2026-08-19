@@ -10,7 +10,7 @@ const collapsed = ref(false)
 <template>
   <el-container class="main-layout">
     <el-aside :width="collapsed ? '64px' : '220px'" class="main-aside">
-      <div class="logo">fengtaiSysView</div>
+      <div class="logo">fengTaiSysView</div>
       <SideMenu :collapse="collapsed" />
     </el-aside>
     <el-container>

@@ -1,4 +1,4 @@
-# fengtaiSysView 前端基座实现计划
+# fengTaiSysView 前端基座实现计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Vite 5 + Vue 3.5 + TypeScript + Pinia + Vue Router 4 + Element Plus（按需）+ Axios + ECharts + vite-plugin-mock + Vitest + ESLint/Prettier/husky/commitlint
 
-**Spec:** [docs/superpowers/specs/2026-08-18-fengtai-sysview-architecture-design.md](../specs/2026-08-18-fengtai-sysview-architecture-design.md)（本计划从 spec 推导，执行者需同时阅读 spec 与本计划）
+**Spec:** [docs/superpowers/specs/2026-08-18-feng-tai-sys-view-architecture-design.md](../specs/2026-08-18-feng-tai-sys-view-architecture-design.md)（本计划从 spec 推导，执行者需同时阅读 spec 与本计划）
 
 ## Global Constraints
 
@@ -82,7 +82,7 @@
 
 ```json
 {
-  "name": "fengtai-sys-view",
+  "name": "feng-tai-sys-view",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -255,7 +255,7 @@ export default defineConfig({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>fengtaiSysView</title>
+    <title>fengTaiSysView</title>
   </head>
   <body>
     <div id="app"></div>
@@ -283,7 +283,7 @@ interface ImportMeta {
 `.env.development`：
 
 ```
-VITE_APP_TITLE=fengtaiSysView
+VITE_APP_TITLE=fengTaiSysView
 VITE_API_BASE_URL=/api
 VITE_USE_MOCK=true
 ```
@@ -291,7 +291,7 @@ VITE_USE_MOCK=true
 `.env.production`：
 
 ```
-VITE_APP_TITLE=fengtaiSysView
+VITE_APP_TITLE=fengTaiSysView
 VITE_API_BASE_URL=/api
 VITE_USE_MOCK=false
 ```
@@ -1945,7 +1945,7 @@ const collapsed = ref(false)
 <template>
   <el-container class="main-layout">
     <el-aside :width="collapsed ? '64px' : '220px'" class="main-aside">
-      <div class="logo">fengtaiSysView</div>
+      <div class="logo">fengTaiSysView</div>
       <SideMenu />
     </el-aside>
     <el-container>
@@ -3167,7 +3167,7 @@ git commit -m "feat: 用户管理页"
 `README.md`：
 
 ```markdown
-# fengtaiSysView
+# fengTaiSysView
 
 丰台区企业级 RBAC 中后台前端基座（Vue 3 + TypeScript + Element Plus）。
 

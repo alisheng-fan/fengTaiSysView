@@ -1,4 +1,4 @@
-# fengtaiSysView 前端架构设计
+# fengTaiSysView 前端架构设计
 
 - 日期：2026-08-18
 - 状态：设计已确认，待实现
@@ -54,7 +54,7 @@
 ## 4. 目录结构
 
 ```
-fengtaiSysView/
+fengTaiSysView/
 ├── .env.development / .env.production      # 环境变量（接口地址、标题等）
 ├── vite.config.ts                          # Vite 配置（插件、代理、别名）
 ├── mock/                                   # Mock 数据（登录、菜单、CRUD）
