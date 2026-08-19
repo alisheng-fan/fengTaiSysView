@@ -42,3 +42,27 @@ export function updateUser(data: Partial<UserItem>): Promise<null> {
 export function deleteUser(id: string): Promise<null> {
   return request<null>({ url: '/system/user', method: 'delete', params: { id } })
 }
+
+import type { MenuNode, NodeItem } from '@/types'
+
+// ---------- 节点 ----------
+export function getNodeList(): Promise<NodeItem[]> {
+  return request<NodeItem[]>({ url: '/system/node/list', method: 'get' })
+}
+export function createNode(data: Partial<NodeItem>): Promise<null> {
+  return request<null>({ url: '/system/node', method: 'post', data })
+}
+export function updateNode(data: Partial<NodeItem>): Promise<null> {
+  return request<null>({ url: '/system/node', method: 'put', data })
+}
+export function deleteNode(id: string): Promise<null> {
+  return request<null>({ url: '/system/node', method: 'delete', params: { id } })
+}
+export function submitNodeData(id: string, data: Record<string, unknown>): Promise<null> {
+  return request<null>({ url: `/node/${id}/submit`, method: 'post', data })
+}
+
+// ---------- 完整可分配树（角色分配权限用） ----------
+export function getAllMenuTree(): Promise<MenuNode[]> {
+  return request<MenuNode[]>({ url: '/system/menu/all', method: 'get' })
+}

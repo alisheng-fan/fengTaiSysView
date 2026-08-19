@@ -34,6 +34,8 @@ export interface MenuNode {
   sort: number
   perms: string[]
   children?: MenuNode[]
+  /** 填报节点时携带字段配置（方案 A：随菜单下发） */
+  fields?: FieldConfig[]
 }
 
 export interface GetMeResult {
@@ -85,4 +87,32 @@ export interface PageResult<T> {
   total: number
   page: number
   pageSize: number
+}
+
+/** 节点字段类型（填报表单控件） */
+export type FieldType = 'input' | 'textarea' | 'number' | 'select' | 'date' | 'radio'
+
+/** 一个字段的配置 */
+export interface FieldConfig {
+  prop: string
+  label: string
+  type: FieldType
+  required?: boolean
+  options?: { label: string; value: string }[]
+  placeholder?: string
+}
+
+/** 填报节点 */
+export interface NodeItem {
+  id: string
+  name: string
+  sort: number
+  status: number
+  fields: FieldConfig[]
+}
+
+/** 修改密码请求 */
+export interface ChangePasswordParams {
+  oldPassword: string
+  newPassword: string
 }

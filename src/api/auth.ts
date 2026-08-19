@@ -12,3 +12,9 @@ export function logout(): Promise<null> {
 export function getMe(): Promise<GetMeResult> {
   return request<GetMeResult>({ url: '/auth/me', method: 'get' })
 }
+
+import type { ChangePasswordParams } from '@/types'
+
+export function changePassword(data: ChangePasswordParams): Promise<null> {
+  return request<null>({ url: '/auth/password', method: 'put', data })
+}
