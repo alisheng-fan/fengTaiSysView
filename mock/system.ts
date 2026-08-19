@@ -1,5 +1,7 @@
 import type { MockMethod } from 'vite-plugin-mock'
 import type { DeptItem, RoleItem, UserItem } from '@/types'
+import { allMenusForTree } from './menus'
+import { buildNodeMenuChildren, nodes } from './nodes'
 
 const depts: DeptItem[] = [
   {
@@ -209,5 +211,11 @@ export default [
       if (i > -1) users.splice(i, 1)
       return ok(null)
     },
+  },
+  // ---------- 菜单 ----------
+  {
+    url: '/api/system/menu/all',
+    method: 'get',
+    response: () => ok(allMenusForTree(buildNodeMenuChildren(nodes.map((n) => n.id)))),
   },
 ] as MockMethod[]
