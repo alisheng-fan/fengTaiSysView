@@ -49,7 +49,7 @@ export const systemGroup: MenuNode = {
   path: '/system',
   component: '',
   icon: 'Setting',
-  sort: 2,
+  sort: 3,
   perms: [],
   children: systemChildren,
 }
@@ -62,16 +62,16 @@ export const businessGroup: MenuNode = {
   path: '/fill',
   component: '',
   icon: 'EditPen',
-  sort: 3,
+  sort: 2,
   perms: [],
   children: [],
 }
 
-/** 完整可分配树：仪表盘 + 系统管理（全子节点）+ 业务填报（全部节点），供角色分配权限与 admin 使用 */
+/** 完整可分配树：仪表盘 + 业务填报（全部节点）+ 系统管理（置于底部，全子节点），供角色分配权限与 admin 使用 */
 export function allMenusForTree(allNodes: MenuNode[]): MenuNode[] {
   return [
     dashboardMenu,
-    { ...systemGroup, children: [...systemChildren] },
     { ...businessGroup, children: [...allNodes] },
+    { ...systemGroup, children: [...systemChildren] },
   ]
 }

@@ -17,7 +17,7 @@ describe('mock 登录鉴权', () => {
 describe('mock/auth buildMenuTree', () => {
   it('按角色 menuIds 构建：admin 系统管理含 5 子节点 + 业务填报 2 节点', () => {
     const tree = buildMenuTree(menuIdsForUser('admin'))
-    expect(tree.map((m) => m.title)).toEqual(['仪表盘', '系统管理', '业务填报'])
+    expect(tree.map((m) => m.title)).toEqual(['仪表盘', '业务填报', '系统管理'])
     const system = tree.find((m) => m.title === '系统管理')!
     expect(system.children?.map((c) => c.id)).toEqual(['21', '22', '23', '24', '25'])
     const fill = tree.find((m) => m.title === '业务填报')!

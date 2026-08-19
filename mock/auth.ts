@@ -28,18 +28,18 @@ export function menuIdsForUser(username: string): string[] {
   return [...ids]
 }
 
-/** 按角色 menuIds 动态构建菜单树：仪表盘 + 系统管理(只含勾选子节点) + 业务填报(只含勾选节点) */
+/** 按角色 menuIds 动态构建菜单树：仪表盘 + 业务填报 + 系统管理(置于底部，只含勾选子节点/节点) */
 export function buildMenuTree(menuIds: string[]): MenuNode[] {
   const tree: MenuNode[] = []
   if (menuIds.includes('1')) tree.push(dashboardMenu)
-  if (menuIds.includes('2')) {
-    const children = systemChildren.filter((c) => menuIds.includes(c.id))
-    tree.push({ ...systemGroup, children })
-  }
   if (menuIds.includes('3')) {
     const nodeIds = menuIds.filter((id) => id.startsWith('n'))
     const nodeChildren = buildNodeMenuChildren(nodeIds)
     if (nodeChildren.length) tree.push({ ...businessGroup, children: nodeChildren })
+  }
+  if (menuIds.includes('2')) {
+    const children = systemChildren.filter((c) => menuIds.includes(c.id))
+    tree.push({ ...systemGroup, children })
   }
   return tree
 }
