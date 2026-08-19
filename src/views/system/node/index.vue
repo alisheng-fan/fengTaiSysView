@@ -162,6 +162,15 @@ onMounted(load)
           rules: [{ required: true, message: '请输入节点名称', trigger: 'blur' }],
         },
         { prop: 'sort', label: '排序', type: 'number' },
+        {
+          prop: 'status',
+          label: '状态',
+          type: 'radio',
+          options: [
+            { label: '启用', value: 1 },
+            { label: '停用', value: 0 },
+          ],
+        },
       ]"
     />
 
