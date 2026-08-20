@@ -1,5 +1,5 @@
 import type { MockMethod } from 'vite-plugin-mock'
-import type { MenuNode, NodeItem } from '@/types'
+import type { FillRecordItem, MenuNode, NodeItem } from '@/types'
 
 /**
  * 共享可变状态：vite-plugin-mock 独立打包每个 mock 文件，直接 import 会把数据副本
@@ -10,7 +10,7 @@ const g = globalThis as unknown as { __fengtaiMockNodes?: NodeItem[] }
 
 export const nodes: NodeItem[] = (g.__fengtaiMockNodes ??= [
   {
-    id: 'n1', name: '台账填报', sort: 1, status: 1,
+    id: 'n1', projectId: 'p2', name: '台账填报', step: 1, sort: 1, status: 1, date: '2026-01-01',
     fields: [
       { prop: 'street', label: '街道名称', type: 'input', required: true },
       { prop: 'population', label: '人口数量', type: 'number', required: true },
@@ -23,7 +23,7 @@ export const nodes: NodeItem[] = (g.__fengtaiMockNodes ??= [
     ],
   },
   {
-    id: 'n2', name: '报表填报', sort: 2, status: 1,
+    id: 'n2', projectId: 'p2', name: '报表填报', step: 2, sort: 2, status: 1, date: '2026-02-01',
     fields: [
       { prop: 'title', label: '报表标题', type: 'input', required: true },
       {
@@ -34,6 +34,14 @@ export const nodes: NodeItem[] = (g.__fengtaiMockNodes ??= [
     ],
   },
 ])
+
+/**
+ * 填报记录单源（globalThis，跨 mock 文件/跨 dev server 进程内共享）：
+ * /api/node/:id/records 的增改与其它端点读取同一引用，进展录入实时反映。
+ */
+const fr = globalThis as { __fengtaiFillRecords?: FillRecordItem[] }
+fr.__fengtaiFillRecords ??= []
+export const fillRecords = fr.__fengtaiFillRecords
 
 /** 节点 → 业务填报子菜单（纯函数：按传入 nodeIds 过滤启用节点、按 sort 排序、携带 fields） */
 export function buildNodeMenuChildren(nodeIds: string[], source: NodeItem[] = nodes): MenuNode[] {
@@ -62,7 +70,7 @@ export default [
     url: '/api/system/node',
     method: 'post',
     response: ({ body }: { body: Partial<NodeItem> }) => {
-      const item: NodeItem = { id: `n${Date.now()}`, name: body.name ?? '', sort: body.sort ?? 1, status: body.status ?? 1, fields: body.fields ?? [] }
+      const item: NodeItem = { id: `n${Date.now()}`, projectId: body.projectId ?? '', name: body.name ?? '', step: body.step ?? 1, sort: body.sort ?? 1, status: body.status ?? 1, fields: body.fields ?? [] }
       nodes.push(item)
       return ok(null)
     },
@@ -86,4 +94,27 @@ export default [
     },
   },
   { url: '/api/node/:id/submit', method: 'post', response: () => ok(null) },
+  // ---------- 填报记录（进展录入） ----------
+  {
+    url: '/api/node/:id/records',
+    method: 'get',
+    response: ({ params }: { params: { id: string } }) => ok(fillRecords.filter((r) => r.nodeId === params.id)),
+  },
+  {
+    url: '/api/node/:id/records',
+    method: 'post',
+    response: ({ params, body }: { params: { id: string }; body: { projectId: string; values: Record<string, unknown> } }) => {
+      fillRecords.push({ id: `r${Date.now()}`, nodeId: params.id, projectId: body.projectId ?? '', values: body.values ?? {}, createBy: 'demo', createTime: new Date().toLocaleString() })
+      return ok(null)
+    },
+  },
+  {
+    url: '/api/node/:id/records/:rid',
+    method: 'put',
+    response: ({ params, body }: { params: { rid: string }; body: { values: Record<string, unknown> } }) => {
+      const r = fillRecords.find((x) => x.id === params.rid)
+      if (r) r.values = body.values
+      return ok(null)
+    },
+  },
 ] as MockMethod[]

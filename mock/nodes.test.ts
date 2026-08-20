@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildNodeMenuChildren, nodes } from './nodes'
+import { buildNodeMenuChildren } from './nodes'
 import type { NodeItem } from '@/types'
 
 describe('mock/nodes buildNodeMenuChildren', () => {
@@ -14,8 +14,8 @@ describe('mock/nodes buildNodeMenuChildren', () => {
 
   it('停用节点不返回；未传入的 nodeId 不返回', () => {
     const custom: NodeItem[] = [
-      { id: 'x1', name: '启用节点', sort: 1, status: 1, fields: [] },
-      { id: 'x2', name: '停用节点', sort: 2, status: 0, fields: [] },
+      { id: 'x1', projectId: 'p1', name: '启用节点', step: 1, sort: 1, status: 1, fields: [] },
+      { id: 'x2', projectId: 'p1', name: '停用节点', step: 2, sort: 2, status: 0, fields: [] },
     ]
     const result = buildNodeMenuChildren(['x1', 'x2'], custom)
     expect(result.map((m) => m.id)).toEqual(['x1'])
