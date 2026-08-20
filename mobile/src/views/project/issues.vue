@@ -2,7 +2,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showSuccessToast, showToast } from 'vant'
-import { createIssue, getIssueList } from '@shared/api/system'
+import { createIssue, getIssueList, updateIssue } from '@shared/api/system'
 import type { IssueItem, IssueStatus } from '@shared/types'
 
 const route = useRoute()
@@ -21,6 +21,19 @@ const statusLabel: Record<IssueStatus, string> = {
 }
 const statusTag: Record<IssueStatus, 'success' | 'warning' | 'primary' | 'default'> = {
   solved: 'success', partial: 'warning', discuss: 'primary', shelved: 'default',
+}
+/** 状态流转顺序：点击状态标签按此循环到下一态 */
+const statusOrder: IssueStatus[] = ['discuss', 'partial', 'solved', 'shelved']
+
+/** 点击状态标签：流转到下一状态并持久化（updateIssue） */
+async function cycleStatus(item: IssueItem) {
+  const next = statusOrder[(statusOrder.indexOf(item.status) + 1) % statusOrder.length]
+  try {
+    await updateIssue({ ...item, status: next })
+    item.status = next
+  } catch {
+    // 错误已提示
+  }
 }
 
 async function load() {
@@ -78,11 +91,11 @@ onMounted(load)
       <van-cell
         v-for="item in list"
         :key="item.id"
-        :title="item.nodeName"
+        :title="item.nodeName || '项目问题'"
         :label="`${item.dept} · ${item.createTime}\n${item.description}`"
       >
         <template #value>
-          <van-tag :type="statusTag[item.status]">{{ statusLabel[item.status] }}</van-tag>
+          <van-tag class="status-tag" :type="statusTag[item.status]" @click="cycleStatus(item)">{{ statusLabel[item.status] }}</van-tag>
         </template>
       </van-cell>
     </van-cell-group>
@@ -93,6 +106,13 @@ onMounted(load)
         <van-cell-group inset>
           <van-field v-model="form.dept" label="提出部门" placeholder="请输入部门" />
           <van-field v-model="form.description" label="问题描述" type="textarea" rows="4" autosize placeholder="请输入问题描述" />
+          <van-field label="状态">
+            <template #input>
+              <van-radio-group v-model="form.status">
+                <van-radio v-for="(label, s) in statusLabel" :key="s" :name="s">{{ label }}</van-radio>
+              </van-radio-group>
+            </template>
+          </van-field>
         </van-cell-group>
         <div style="margin: 16px">
           <van-button round block type="primary" native-type="submit">提交</van-button>
@@ -101,3 +121,9 @@ onMounted(load)
     </van-popup>
   </div>
 </template>
+
+<style scoped>
+.status-tag {
+  cursor: pointer;
+}
+</style>
