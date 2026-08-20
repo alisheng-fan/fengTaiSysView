@@ -85,7 +85,7 @@ export function getAllMenuTree(): Promise<MenuNode[]> {
 }
 
 import type {
-  FillRecordItem, IssueItem, ProjectItem, StatisticsOverview,
+  FillRecordItem, IssueItem, OverdueProjectItem, ProjectItem, StatisticsOverview,
 } from '../types'
 
 // ---------- 项目 ----------
@@ -131,6 +131,10 @@ export function updateIssue(data: Partial<IssueItem>): Promise<null> {
 // ---------- 监测统计 ----------
 export function getStatisticsOverview(): Promise<StatisticsOverview> {
   return request<StatisticsOverview>({ url: '/statistics/overview', method: 'get' })
+}
+/** 超时项目清单（未完成且截止已过，按截止时间升序） */
+export function getOverdueProjects(): Promise<OverdueProjectItem[]> {
+  return request<OverdueProjectItem[]>({ url: '/statistics/overdue-projects', method: 'get' })
 }
 
 import type {

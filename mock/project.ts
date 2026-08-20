@@ -1,5 +1,5 @@
 import type { MockMethod } from 'vite-plugin-mock'
-import type { DeptItem, NodeItem, ProjectItem, StatisticsOverview } from '@/types'
+import type { DeptItem, NodeItem, OverdueProjectItem, ProjectItem, StatisticsOverview } from '@/types'
 import { issues } from './issue'
 import { nodes } from './nodes'
 import { depts } from './system'
@@ -60,6 +60,20 @@ export function buildOverview(
 
 const ok = (data: unknown) => ({ code: 0, message: 'ok', data })
 
+/** 超时项目清单聚合（纯函数，可单测）：未完成且截止已过的节点，关联项目名，按截止时间升序 */
+export function buildOverdueList(projs: ProjectItem[], nds: NodeItem[]): OverdueProjectItem[] {
+  const now = new Date().toISOString().slice(0, 10)
+  return nds
+    .filter((n) => n.status !== 2 && !!n.deadline && n.deadline < now)
+    .sort((a, b) => (a.deadline ?? '').localeCompare(b.deadline ?? ''))
+    .map((n) => ({
+      projectId: n.projectId,
+      projectName: projs.find((p) => p.id === n.projectId)?.name ?? n.projectId,
+      nodeName: n.name,
+      deadline: n.deadline ?? '',
+    }))
+}
+
 export default [
   { url: '/api/system/project/list', method: 'get', response: () => ok(projects) },
   {
@@ -89,4 +103,5 @@ export default [
     },
   },
   { url: '/api/statistics/overview', method: 'get', response: () => ok(buildOverview(projects, issues, nodes, depts)) },
+  { url: '/api/statistics/overdue-projects', method: 'get', response: () => ok(buildOverdueList(projects, nodes)) },
 ] as MockMethod[]

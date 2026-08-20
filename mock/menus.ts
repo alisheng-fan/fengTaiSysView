@@ -72,6 +72,10 @@ export const systemChildren: MenuNode[] = [
     id: '32', parentId: '2', name: 'LoginLog', title: '登录日志', path: '/system/loginlog',
     component: 'system/loginlog/index', icon: '', sort: 12, perms: [],
   },
+  {
+    id: '33', parentId: '2', name: 'Stats', title: '统计增强', path: '/system/stats',
+    component: 'system/stats/index', icon: '', sort: 13, perms: [],
+  },
 ]
 
 export const systemGroup: MenuNode = {

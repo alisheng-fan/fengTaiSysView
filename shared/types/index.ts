@@ -264,3 +264,11 @@ export interface StatisticsOverview {
   overdueProjects: number       // 超时项目
   depEfficiency: { depName: string; done: number; total: number }[]  // 科室效率
 }
+
+/** 超时项目清单项（截止已过且未完成的节点，关联项目名，按截止时间升序） */
+export interface OverdueProjectItem {
+  projectId: string
+  projectName: string
+  nodeName: string
+  deadline: string
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildOverview } from './project'
+import { buildOverview, buildOverdueList } from './project'
 import type { DeptItem, NodeItem, ProjectItem } from '@/types'
 
 const projects: ProjectItem[] = [
@@ -9,7 +9,8 @@ const projects: ProjectItem[] = [
 ]
 
 const day = 86400000
-const yesterday = new Date(Date.now() - day).toISOString().slice(0, 10)
+const daysAgo = (n: number) => new Date(Date.now() - n * day).toISOString().slice(0, 10)
+const yesterday = daysAgo(1)
 const tomorrow = new Date(Date.now() + day).toISOString().slice(0, 10)
 
 const nodes: NodeItem[] = [
@@ -74,5 +75,31 @@ describe('mock/project buildOverview', () => {
     const r = buildOverview([], [], noDep, depts)
     expect(r.depEfficiency).toEqual([])
     expect(r.overdueNodes).toBe(0)
+  })
+})
+
+describe('mock/project buildOverdueList', () => {
+  it('超时清单：仅未完成且截止已过，字段正确（项目名/节点名/截止）', () => {
+    const overdueNodes: NodeItem[] = [
+      { id: 'n1', projectId: 'p1', phaseId: 'ph2', name: '台账填报', step: 1, sort: 1, status: 1, isNeed: true, isDefault: true, dutyDepId: '13', deadline: yesterday, fields: [] },
+      { id: 'n2', projectId: 'p1', phaseId: 'ph4', name: '报表填报', step: 1, sort: 1, status: 2, isNeed: true, isDefault: true, dutyDepId: '13', deadline: yesterday, fields: [] }, // 已完成不算
+      { id: 'n3', projectId: 'p2', phaseId: 'ph4', name: '监督核验', step: 1, sort: 1, status: 1, isNeed: true, isDefault: true, dutyDepId: '12', deadline: tomorrow, fields: [] }, // 未来不算
+    ]
+    const list = buildOverdueList(projects, overdueNodes)
+    expect(list).toEqual([{ projectId: 'p1', projectName: 'A', nodeName: '台账填报', deadline: yesterday }])
+  })
+
+  it('多个超时节点按截止时间升序，未知项目回退项目 id', () => {
+    const two = [
+      { id: 'n1', projectId: 'px', phaseId: 'ph2', name: '早', step: 1, sort: 1, status: 1, isNeed: true, isDefault: true, deadline: yesterday, fields: [] },
+      { id: 'n2', projectId: 'p1', phaseId: 'ph4', name: '晚', step: 1, sort: 1, status: 1, isNeed: true, isDefault: true, deadline: daysAgo(3), fields: [] },
+    ]
+    const list = buildOverdueList(projects, two)
+    expect(list.map((x) => x.nodeName)).toEqual(['晚', '早'])
+    expect(list[1]).toEqual({ projectId: 'px', projectName: 'px', nodeName: '早', deadline: yesterday })
+  })
+
+  it('空节点 → 空清单', () => {
+    expect(buildOverdueList(projects, [])).toEqual([])
   })
 })
