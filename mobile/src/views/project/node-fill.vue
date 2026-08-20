@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { showConfirmDialog, showSuccessToast, showToast } from 'vant'
+import { showSuccessToast, showToast } from 'vant'
 import { createFillRecord, getNodeList, getNodeRecords, updateFillRecord } from '@shared/api/system'
+import { useFillStore } from '@/stores/fill'
 import { toVantFields, type VantField } from '@/utils/toVantFields'
 import type { FillRecordItem } from '@shared/types'
 
 const route = useRoute()
 const router = useRouter()
-const projectId = route.params.id as string
 const nodeId = route.params.nodeId as string
 
+const fillStore = useFillStore()
 const node = ref<{ name: string; fields: VantField[]; projectId: string } | null>(null)
 const records = ref<FillRecordItem[]>([])
 const loading = ref(false)
+const denied = ref(false)
 const showForm = ref(false)
 const editingId = ref('')
 const form = reactive<Record<string, unknown>>({})
@@ -22,13 +24,37 @@ const pickerVisible = ref(false)
 const activeField = ref<VantField | null>(null)
 const calendarVisible = ref(false)
 
-/** 加载节点配置 + 填报记录 */
+/** 字段 prop → label 映射（记录摘要用中文标签替代 prop） */
+const fieldLabels = computed(() => {
+  const map: Record<string, string> = {}
+  for (const f of node.value?.fields ?? []) map[f.prop] = f.label
+  return map
+})
+
+/**
+ * 加载节点配置 + 填报记录
+ * 深链防护：节点可见性由角色分配决定（fillStore = getMe 菜单中的业务填报节点），
+ * 未分配的用户直接访问 /project/:id/node/:nodeId 一律按无权访问处理。
+ */
 async function load() {
   loading.value = true
   try {
+    if (!fillStore.nodes.length) await fillStore.loadNodes()
+    if (!fillStore.nodes.some((n) => n.id === nodeId)) {
+      denied.value = true
+      node.value = null
+      records.value = []
+      return
+    }
     const nodes = await getNodeList()
     const n = nodes.find((x) => x.id === nodeId)
-    node.value = n ? { name: n.name, fields: toVantFields(n.fields), projectId: n.projectId } : null
+    if (!n) {
+      denied.value = true
+      node.value = null
+      records.value = []
+      return
+    }
+    node.value = { name: n.name, fields: toVantFields(n.fields), projectId: n.projectId }
     records.value = await getNodeRecords(nodeId)
   } catch {
     showToast('加载失败')
@@ -75,12 +101,7 @@ async function submit() {
   }
 }
 
-/** 删除填报记录（本期提供删除） */
-async function removeRecord(r: FillRecordItem) {
-  await showConfirmDialog({ title: '提示', message: '确定删除这条填报记录？' })
-  // mock 未提供 delete 端点，本期暂不实现删除（仅前端确认占位）
-  showToast('删除功能待接入')
-}
+// 注：填报记录"删除"本期未实现（mock 无 delete 端点），如需补 /api/node/:id/records/:rid DELETE
 
 function openPicker(field: VantField) {
   activeField.value = field
@@ -112,6 +133,7 @@ onMounted(load)
     <van-nav-bar :title="node?.name ?? '填报'" left-arrow @click-left="router.back()" />
 
     <van-loading v-if="loading" class="page-loading">加载中...</van-loading>
+    <van-empty v-else-if="denied" description="节点不存在或无权访问" />
     <template v-else-if="node">
       <!-- 记录列表 -->
       <div class="record-toolbar">
@@ -123,7 +145,7 @@ onMounted(load)
           v-for="r in records"
           :key="r.id"
           :title="`${r.createTime} · ${r.createBy}`"
-          :label="Object.entries(r.values).map(([k, v]) => `${k}: ${v}`).join('；')"
+          :label="Object.entries(r.values).map(([k, v]) => `${fieldLabels[k] ?? k}: ${v}`).join('；')"
           is-link
           @click="openEdit(r)"
         />
