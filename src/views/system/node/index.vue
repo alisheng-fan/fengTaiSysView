@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /**
  * 节点管理页
- * - 节点列表（名称/排序/状态/字段数）+ 新增/编辑/删除
+ * - 节点列表（所属项目/名称/步骤/排序/状态/字段数）+ 新增/编辑/删除
  * - 字段配置编辑器：为每个节点配置动态填报表单的字段（标签/字段名/类型/必填/选项）
  */
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { createNode, deleteNode, getNodeList, updateNode } from '@/api/system'
+import { createNode, deleteNode, getNodeList, getProjectList, updateNode } from '@/api/system'
 import ProForm from '@/components/ProForm/index.vue'
-import type { FieldConfig, FieldType, NodeItem } from '@/types'
+import type { FieldConfig, FieldType, NodeItem, ProjectItem } from '@/types'
 
 /** 节点列表数据 */
 const list = ref<NodeItem[]>([])
@@ -20,6 +20,13 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 /** 新增/编辑弹窗的表单数据（编辑时整行节点回填） */
 const form = reactive<Partial<NodeItem>>({})
+/** 项目列表（所属项目下拉与列回显用） */
+const projects = ref<ProjectItem[]>([])
+
+/** 按项目 id 查找项目名称（无匹配显示占位符） */
+function projectName(id: string) {
+  return projects.value.find((p) => p.id === id)?.name ?? '-'
+}
 
 /** 加载节点列表 */
 async function load() {
@@ -34,7 +41,7 @@ async function load() {
 /** 打开"新增节点"弹窗，重置表单为默认值 */
 function openAdd() {
   isEdit.value = false
-  Object.assign(form, { name: '', sort: 1, status: 1 })
+  Object.assign(form, { name: '', projectId: '', step: 1, sort: 1, status: 1 })
   dialogVisible.value = true
 }
 
@@ -50,7 +57,7 @@ function openEdit(row: NodeItem) {
 
 /**
  * 新增/编辑弹窗提交回调（由 ProForm submitApi 调用）
- * @param values 弹窗表单提交的字段值（name/sort/status）
+ * @param values 弹窗表单提交的字段值（name/projectId/step/sort/status）
  */
 async function handleSubmit(values: Record<string, unknown>) {
   if (isEdit.value) {
@@ -163,7 +170,11 @@ const typeLabel: Record<FieldType, string> = {
   radio: '单选',
 }
 
-onMounted(load)
+onMounted(async () => {
+  // 并行加载节点列表与项目列表（所属项目列/下拉依赖项目数据）
+  const [, projectList] = await Promise.all([load(), getProjectList()])
+  projects.value = projectList
+})
 </script>
 
 <template>
@@ -173,7 +184,11 @@ onMounted(load)
     </div>
 
     <el-table v-loading="loading" :data="list" border>
+      <el-table-column label="所属项目" min-width="220">
+        <template #default="{ row }">{{ projectName(row.projectId) }}</template>
+      </el-table-column>
       <el-table-column prop="name" label="节点名称" min-width="140" />
+      <el-table-column prop="step" label="步骤" width="80" />
       <el-table-column prop="sort" label="排序" width="80" />
       <el-table-column label="状态" width="90">
         <template #default="{ row }">
@@ -211,6 +226,13 @@ onMounted(load)
           label: '节点名称',
           rules: [{ required: true, message: '请输入节点名称', trigger: 'blur' }],
         },
+        {
+          prop: 'projectId',
+          label: '所属项目',
+          type: 'select',
+          options: projects.map((p) => ({ label: p.name, value: p.id })),
+        },
+        { prop: 'step', label: '步骤', type: 'number' },
         { prop: 'sort', label: '排序', type: 'number' },
         {
           prop: 'status',
