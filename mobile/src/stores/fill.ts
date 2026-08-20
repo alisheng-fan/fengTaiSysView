@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { getMe } from '@shared/api/auth'
 import type { MenuNode } from '@shared/types'
 
-/** 填报 store：从 /auth/me 菜单中筛出业务填报节点（含 fields） */
+/** 填报 store：从 /auth/me 菜单筛出业务填报节点（含 fields），保留 RBAC 可见性 */
 export const useFillStore = defineStore('fill', {
   state: () => ({ nodes: [] as MenuNode[] }),
   actions: {

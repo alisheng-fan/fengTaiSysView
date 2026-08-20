@@ -98,21 +98,21 @@ export default [
   {
     url: '/api/node/:id/records',
     method: 'get',
-    response: ({ params }: { params: { id: string } }) => ok(fillRecords.filter((r) => r.nodeId === params.id)),
+    response: ({ query }: { query: { id: string } }) => ok(fillRecords.filter((r) => r.nodeId === query.id)),
   },
   {
     url: '/api/node/:id/records',
     method: 'post',
-    response: ({ params, body }: { params: { id: string }; body: { projectId: string; values: Record<string, unknown> } }) => {
-      fillRecords.push({ id: `r${Date.now()}`, nodeId: params.id, projectId: body.projectId ?? '', values: body.values ?? {}, createBy: 'demo', createTime: new Date().toLocaleString() })
+    response: ({ query, body }: { query: { id: string }; body: { projectId: string; values: Record<string, unknown> } }) => {
+      fillRecords.push({ id: `r${Date.now()}`, nodeId: query.id, projectId: body.projectId ?? '', values: body.values ?? {}, createBy: 'demo', createTime: new Date().toLocaleString() })
       return ok(null)
     },
   },
   {
     url: '/api/node/:id/records/:rid',
     method: 'put',
-    response: ({ params, body }: { params: { rid: string }; body: { values: Record<string, unknown> } }) => {
-      const r = fillRecords.find((x) => x.id === params.rid)
+    response: ({ query, body }: { query: { rid: string }; body: { values: Record<string, unknown> } }) => {
+      const r = fillRecords.find((x) => x.id === query.rid)
       if (r) r.values = body.values
       return ok(null)
     },

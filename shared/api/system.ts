@@ -78,11 +78,6 @@ export function updateNode(data: Partial<NodeItem>): Promise<null> {
 export function deleteNode(id: string): Promise<null> {
   return request<null>({ url: '/system/node', method: 'delete', params: { id } })
 }
-/** 提交某节点的填报数据（业务填报页用） */
-export function submitNodeData(id: string, data: Record<string, unknown>): Promise<null> {
-  return request<null>({ url: `/node/${id}/submit`, method: 'post', data })
-}
-
 // ---------- 完整可分配树（角色分配权限用） ----------
 /** 完整菜单树（含系统管理/仪表盘/全部填报节点），供角色分配权限时勾选 */
 export function getAllMenuTree(): Promise<MenuNode[]> {
