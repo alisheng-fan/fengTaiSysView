@@ -199,6 +199,8 @@ async function submit() {
       await createFillRecord({ nodeId, projectId: node.value.projectId, values: { ...form } })
     }
     const openNames = ruleState.value.openNodeIds.map((id) => nodeNameMap.value.get(id) ?? id).join('、')
+    // 持久化开启门禁：isDefault=false 的条件节点在本次会话内于详情看板可见
+    if (ruleState.value.openNodeIds.length) fillStore.openNodes(ruleState.value.openNodeIds)
     showSuccessToast('保存成功')
     showForm.value = false
     await load()

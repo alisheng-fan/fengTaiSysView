@@ -27,9 +27,6 @@ const form = reactive<Partial<NodeItem>>({})
 const projects = ref<ProjectItem[]>([])
 /** 阶段列表（所属阶段下拉与列回显用） */
 const phases = ref<PhaseItem[]>([])
-/** 部门树（经办科室下拉，扁平化后使用） */
-const depts = ref<DeptItem[]>([])
-
 /** 部门树 → 扁平列表（经办科室列回显与下拉选项用） */
 function flattenDepts(tree: DeptItem[]): { id: string; name: string }[] {
   return tree.flatMap((d) => [
@@ -209,7 +206,6 @@ onMounted(async () => {
   ])
   projects.value = projectList
   phases.value = phaseList
-  depts.value = deptTree
   deptOptions.value = flattenDepts(deptTree)
 })
 </script>

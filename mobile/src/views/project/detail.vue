@@ -16,10 +16,13 @@ const phases = ref<PhaseItem[]>([])
 const depts = ref<DeptItem[]>([])
 const loading = ref(false)
 
-/** 流程节点：getNodeList 按项目过滤 ∩ 角色可见节点（RBAC 可见性），分组时组内按 step 排序 */
+/** 流程节点：getNodeList 按项目过滤 ∩ 角色可见节点（RBAC 可见性）∩ 默认出现或已由规则引擎开启（isDefault=false 的条件节点），分组时组内按 step 排序 */
 const nodes = computed(() => {
   const visible = new Set(fillStore.nodes.map((n) => n.id))
-  return allNodes.value.filter((n) => n.projectId === projectId && visible.has(n.id))
+  const opened = new Set(fillStore.openedNodes)
+  return allNodes.value.filter(
+    (n) => n.projectId === projectId && visible.has(n.id) && (n.isDefault || opened.has(n.id)),
+  )
 })
 
 const phaseMap = computed(() => new Map(phases.value.map((p) => [p.id, p])))

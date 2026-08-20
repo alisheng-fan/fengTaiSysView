@@ -109,8 +109,8 @@ export interface LoginLogItem {
   msg?: string
 }
 
-/** 统计增强（StatsOverview 扩展） */
-export interface StatsOverview {
+/** 统计增强（StatisticsOverview 扩展） */
+export interface StatisticsOverview {
   totalProjects: number
   firstCount: number
   secondCount: number
