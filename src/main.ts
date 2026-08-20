@@ -5,8 +5,10 @@
  */
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { ElMessage } from 'element-plus'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/dist/index.css'
+import { setNotifyError } from '@/api/request'
 import App from './App.vue'
 import router from './router'
 import { perm } from '@/directives/perm'
@@ -23,3 +25,6 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 app.mount('#app')
+
+// 注入错误消息提示：shared 层通过 setNotifyError 回调各端实现（PC=ElMessage.error）
+setNotifyError((msg) => ElMessage.error(msg))

@@ -1,9 +1,12 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { injectToken, normalizeResponse, handleHttpError } from './request'
+import { injectToken, normalizeResponse, handleHttpError, setNotifyError } from './request'
 
-vi.mock('element-plus', () => ({
-  ElMessage: { error: vi.fn(), success: vi.fn() },
-}))
+// 注入 notifyError 为 spy，断言 shared 层通过 setNotifyError 回调各端实现
+const notifySpy = vi.fn()
+beforeEach(() => {
+  setNotifyError(notifySpy)
+  vi.clearAllMocks()
+})
 
 function makeConfig(overrides: Record<string, unknown> = {}) {
   return { headers: {}, ...overrides } as any
@@ -14,8 +17,6 @@ function makeError(status: number, message = '') {
 }
 
 describe('api/request 拦截器纯函数', () => {
-  beforeEach(() => vi.clearAllMocks())
-
   it('injectToken 在有 token 时注入 Authorization', () => {
     localStorage.setItem('fengtai_token', 't-123')
     const config = injectToken(makeConfig())
@@ -33,15 +34,17 @@ describe('api/request 拦截器纯函数', () => {
     expect(normalizeResponse(res)).toBe(res)
   })
 
-  it('normalizeResponse code!==0 抛错', () => {
+  it('normalizeResponse code!==0 抛错并通知', () => {
     const res = { data: { code: 500, message: '业务失败', data: null } } as any
     expect(() => normalizeResponse(res)).toThrow('业务失败')
+    expect(notifySpy).toHaveBeenCalledWith('业务失败')
   })
 
-  it('handleHttpError 对 401 清除 token', () => {
+  it('handleHttpError 对 401 清除 token 并提示', () => {
     localStorage.setItem('fengtai_token', 't-123')
     handleHttpError(makeError(401)).catch(() => {})
     expect(localStorage.getItem('fengtai_token')).toBeNull()
+    expect(notifySpy).toHaveBeenCalledWith('登录已过期，请重新登录')
   })
 
   it('handleHttpError 返回 rejected Promise', async () => {
