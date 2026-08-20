@@ -102,16 +102,101 @@ export interface FieldConfig {
   placeholder?: string
 }
 
-/** 流程节点（挂项目、带流程顺序与状态） */
+/** 阶段配置（work_phase） */
+export interface PhaseItem {
+  id: string
+  name: string                 // 前期立项/土地征地/土地供应/建设及核验
+  prePhaseId?: string          // 前置阶段
+  preIsAll?: boolean           // 前置是否要求齐全
+  levelNo: number
+  sortNo: number
+}
+
+/** 流程节点（work_node + biz_flow_node 合并升级：挂项目/阶段、带流程顺序与状态） */
 export interface NodeItem {
   id: string
   projectId: string
+  phaseId: string              // 所属阶段
   name: string
-  step: number
+  step: number                 // 阶段内顺序
   sort: number
-  status: number        // 1 进行中 / 2 已完成
+  status: number               // 生命周期 1 进行中 / 2 已完成
   date?: string
+  preNodeIds?: string[]        // 前置节点
+  preIsAll?: boolean           // 前置是否全部
+  isNeed: boolean              // 是否必要环节
+  isDefault: boolean           // 是否默认出现（false=条件开启）
+  dutyDepId?: string           // 经办科室
+  deadlineDays?: number        // 办理时限（天）
+  deadline?: string            // 截止时间（创建节点实例时按时限计算）
   fields: FieldConfig[]
+}
+
+/** 字段触发条件（work_node_cond，简化） */
+export interface FieldCondition {
+  id: string
+  nodeId: string               // 目标节点（被开启/隐藏）
+  triggerNodeId: string        // 触发节点
+  triggerFieldId: string
+  operator: 'eq' | 'neq' | 'in' | 'notin' | 'empty' | 'notempty'
+  condValue: string
+  action: 'OPEN' | 'HIDE'
+  enabled: boolean
+}
+
+/** 公示公告（biz_announcement） */
+export interface AnnouncementItem {
+  id: string
+  projectId?: string
+  annType: '公示' | '公告' | '发布信息'
+  title: string
+  content: string
+  publishDate: string
+  source?: string
+}
+
+/** 通知提醒（biz_notice） */
+export interface NoticeItem {
+  id: string
+  projectId: string
+  nodeId: string
+  title: string
+  content: string
+  noticeType: 'REMIND' | 'NOTICE'
+  read: boolean
+  createTime: string
+}
+
+/** 附件（biz_flow_file，mock 存路径） */
+export interface FlowFileItem {
+  id: string
+  projectId: string
+  nodeId: string
+  fileName: string
+  filePath: string
+  fileSize: number
+  uploadMan: string
+  uploadTime: string
+}
+
+/** 人员（sys_per） */
+export interface PerItem {
+  id: string
+  name: string
+  deptId: string
+  phone?: string
+  email?: string
+  status: number
+}
+
+/** 登录日志（sys_loginlog） */
+export interface LoginLogItem {
+  id: string
+  username: string
+  ip?: string
+  loginTime: string
+  status: number                // 1 成功 / 0 失败
+  msg?: string
 }
 
 /** 修改密码请求 */
@@ -166,4 +251,10 @@ export interface StatisticsOverview {
   issueTotal: number
   issueSolved: number
   bizTotal: number
+  nodeTotal: number             // 节点总数
+  nodeDone: number              // 已完成节点
+  nodeRate: number              // 节点完成率
+  overdueNodes: number          // 超时节点
+  overdueProjects: number       // 超时项目
+  depEfficiency: { depName: string; done: number; total: number }[]  // 科室效率
 }
