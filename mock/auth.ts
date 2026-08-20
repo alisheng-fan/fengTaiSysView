@@ -3,6 +3,7 @@ import type { MenuNode } from '@/types'
 import { businessGroup, dashboardMenu, systemGroup, systemChildren } from './menus'
 import { buildNodeMenuChildren } from './nodes'
 import { roles } from './system'
+import { loginlogs } from './loginlog'
 
 export interface MockUser {
   password: string
@@ -63,9 +64,12 @@ export default [
     method: 'post',
     response: ({ body }: { body: { username: string; password: string } }) => {
       const u = users[body.username]
+      const now = new Date().toLocaleString()
       if (!u || u.password !== body.password) {
+        loginlogs.push({ id: `log${Date.now()}`, username: body.username, ip: '127.0.0.1', loginTime: now, status: 0, msg: '用户名或密码错误' })
         return { code: 1, message: '用户名或密码错误', data: null }
       }
+      loginlogs.push({ id: `log${Date.now()}`, username: body.username, ip: '127.0.0.1', loginTime: now, status: 1, msg: '登录成功' })
       return { code: 0, message: 'ok', data: { token: `token-${body.username}` } }
     },
   },

@@ -8,9 +8,13 @@ import type { FillRecordItem, MenuNode, NodeItem } from '@/types'
  */
 const g = globalThis as unknown as { __fengtaiMockNodes?: NodeItem[] }
 
+/** 相对今天 n 天后的日期（YYYY-MM-DD），用作节点截止时间 deadline */
+const daysFromNow = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10)
+
 export const nodes: NodeItem[] = (g.__fengtaiMockNodes ??= [
   {
-    id: 'n1', projectId: 'p2', name: '台账填报', step: 1, sort: 1, status: 1, date: '2026-01-01',
+    id: 'n1', projectId: 'p2', phaseId: 'ph2', name: '台账填报', step: 1, sort: 1, status: 1, date: '2026-01-01',
+    isNeed: true, isDefault: true, dutyDepId: '13', deadlineDays: 10, deadline: daysFromNow(10),
     fields: [
       { prop: 'street', label: '街道名称', type: 'input', required: true },
       { prop: 'population', label: '人口数量', type: 'number', required: true },
@@ -19,11 +23,17 @@ export const nodes: NodeItem[] = (g.__fengtaiMockNodes ??= [
         prop: 'district', label: '所属区', type: 'select',
         options: [{ label: '东城区', value: '东城区' }, { label: '西城区', value: '西城区' }],
       },
+      {
+        prop: 'isKey', label: '是否重点项目', type: 'radio',
+        options: [{ label: '是', value: '是' }, { label: '否', value: '否' }],
+      },
       { prop: 'remark', label: '备注', type: 'textarea' },
     ],
   },
   {
-    id: 'n2', projectId: 'p2', name: '报表填报', step: 2, sort: 2, status: 1, date: '2026-02-01',
+    id: 'n2', projectId: 'p2', phaseId: 'ph4', name: '报表填报', step: 2, sort: 2, status: 1, date: '2026-02-01',
+    preNodeIds: ['n1'], preIsAll: true, isNeed: true, isDefault: false,
+    dutyDepId: '12', deadlineDays: 15, deadline: daysFromNow(15),
     fields: [
       { prop: 'title', label: '报表标题', type: 'input', required: true },
       {
@@ -73,7 +83,23 @@ export default [
     url: '/api/system/node',
     method: 'post',
     response: ({ body }: { body: Partial<NodeItem> }) => {
-      const item: NodeItem = { id: `n${Date.now()}`, projectId: body.projectId ?? '', name: body.name ?? '', step: body.step ?? 1, sort: body.sort ?? 1, status: body.status ?? 1, fields: body.fields ?? [] }
+      const item: NodeItem = {
+        id: `n${Date.now()}`,
+        projectId: body.projectId ?? '',
+        phaseId: body.phaseId ?? '',
+        name: body.name ?? '',
+        step: body.step ?? 1,
+        sort: body.sort ?? 1,
+        status: body.status ?? 1,
+        preNodeIds: body.preNodeIds,
+        preIsAll: body.preIsAll,
+        isNeed: body.isNeed ?? false,
+        isDefault: body.isDefault ?? false,
+        dutyDepId: body.dutyDepId,
+        deadlineDays: body.deadlineDays,
+        deadline: body.deadline,
+        fields: body.fields ?? [],
+      }
       nodes.push(item)
       return ok(null)
     },

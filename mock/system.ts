@@ -3,7 +3,15 @@ import type { DeptItem, RoleItem, UserItem } from '@/types'
 import { allMenusForTree } from './menus'
 import { buildNodeMenuChildren, nodes } from './nodes'
 
-const depts: DeptItem[] = [
+/**
+ * 共享可变状态：vite-plugin-mock 独立打包每个 mock 文件，直接 import 会把数据副本
+ * 内联进各自的包、互不相通。用 globalThis 挂一份权威 depts / roles，
+ * 使 /system/dept 的新增/更新 与 /system/role 的保存分别经 './system' 被其它文件
+ * （如 project.ts 统计聚合）读到同一引用，实时打通。
+ */
+const g = globalThis as unknown as { __fengtaiMockDepts?: DeptItem[]; __fengtaiMockRoles?: RoleItem[] }
+
+export const depts: DeptItem[] = (g.__fengtaiMockDepts ??= [
   {
     id: '1',
     parentId: null,
@@ -15,15 +23,9 @@ const depts: DeptItem[] = [
   },
   { id: '11', parentId: '1', name: '政务科', sort: 1, leader: '李科长', status: 1 },
   { id: '12', parentId: '1', name: '数据科', sort: 2, leader: '王科长', status: 1 },
+  { id: '13', parentId: '1', name: '规划实施科', sort: 3, leader: '赵科长', status: 1 },
   { id: '121', parentId: '12', name: '平台组', sort: 1, status: 1 },
-]
-
-/**
- * 共享可变状态：vite-plugin-mock 用 bundleRequire 独立打包每个 mock 文件，
- * 直接 import 会把数据副本内联进各自的包、互不相通。用 globalThis 挂一份权威 roles，
- * 使 /system/role 的保存与 /auth/me 的解析（auth.ts 经 './system' 读到同一引用）实时打通。
- */
-const g = globalThis as unknown as { __fengtaiMockRoles?: RoleItem[] }
+])
 
 export const roles: RoleItem[] = (g.__fengtaiMockRoles ??= [
   { id: '1', name: '系统管理员', code: 'admin', sort: 1, status: 1, menuIds: ['1', '2', '21', '22', '23', '24', '25', '26', '3', 'n1', 'n2'], remark: '全部权限' },

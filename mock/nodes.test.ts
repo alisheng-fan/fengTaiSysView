@@ -14,8 +14,8 @@ describe('mock/nodes buildNodeMenuChildren', () => {
 
   it('未传入的 nodeId 不返回；status 不再作为可见性过滤', () => {
     const custom: NodeItem[] = [
-      { id: 'x1', projectId: 'p1', name: '进行中节点', step: 1, sort: 1, status: 1, fields: [] },
-      { id: 'x2', projectId: 'p1', name: '已完成节点', step: 2, sort: 2, status: 2, fields: [] },
+      { id: 'x1', projectId: 'p1', phaseId: 'ph1', name: '进行中节点', step: 1, sort: 1, status: 1, isNeed: true, isDefault: true, fields: [] },
+      { id: 'x2', projectId: 'p1', phaseId: 'ph1', name: '已完成节点', step: 2, sort: 2, status: 2, isNeed: true, isDefault: false, fields: [] },
     ]
     // 只分配 x1 → 仅返回 x1（x2 未分配即使 status 正常也不返回）
     const onlyX1 = buildNodeMenuChildren(['x1'], custom)
@@ -27,8 +27,8 @@ describe('mock/nodes buildNodeMenuChildren', () => {
 
   it('菜单可见性仅由角色分配决定：已完成节点在分配后仍可见', () => {
     const custom: NodeItem[] = [
-      { id: 'x1', projectId: 'p1', name: '进行中节点', step: 1, sort: 1, status: 1, fields: [] },
-      { id: 'x2', projectId: 'p1', name: '已完成节点', step: 2, sort: 2, status: 2, fields: [] },
+      { id: 'x1', projectId: 'p1', phaseId: 'ph1', name: '进行中节点', step: 1, sort: 1, status: 1, isNeed: true, isDefault: true, fields: [] },
+      { id: 'x2', projectId: 'p1', phaseId: 'ph1', name: '已完成节点', step: 2, sort: 2, status: 2, isNeed: true, isDefault: false, fields: [] },
     ]
     // 生命周期 status=2（已完成）不影响可见性：已分配即返回
     const result = buildNodeMenuChildren(['x2'], custom)
