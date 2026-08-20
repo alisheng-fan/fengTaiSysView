@@ -32,9 +32,10 @@ function flattenDepts(depts: DeptItem[]): { label: string; value: string }[] {
   ])
 }
 
-/** 按部门 id 查找部门名称（部门列回显，无匹配显示占位符） */
+/** 按部门 id 查找部门名称（部门列回显，扁平化查找以覆盖嵌套部门，无匹配显示占位符） */
 function deptName(id?: string) {
-  return id ? (depts.value.find((d) => d.id === id)?.name ?? '-') : '-'
+  if (!id) return '-'
+  return flattenDepts(depts.value).find((d) => d.value === id)?.label ?? '-'
 }
 
 /** 加载人员列表 */
