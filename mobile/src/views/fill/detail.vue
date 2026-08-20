@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showSuccessToast, showToast } from 'vant'
 import { useFillStore } from '@/stores/fill'
 import { submitNodeData } from '@shared/api/system'
 import { toVantFields, type VantField } from '@/utils/toVantFields'
-import type { FieldConfig } from '@shared/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,6 +15,22 @@ const node = computed(() => fillStore.nodes.find((n) => n.id === nodeId))
 const fields = computed(() => toVantFields(node.value?.fields ?? []))
 const form = reactive<Record<string, unknown>>({})
 
+const loading = ref(false)
+
+/** 直进/刷新详情页时 store 未初始化：主动加载一次，加载失败由请求层提示 */
+onMounted(async () => {
+  if (!fillStore.nodes.length) {
+    loading.value = true
+    try {
+      await fillStore.loadNodes()
+    } catch {
+      // 加载失败由请求层提示
+    } finally {
+      loading.value = false
+    }
+  }
+})
+
 // select 用 Picker 弹出选择
 const pickerVisible = ref(false)
 const activeField = ref<VantField | null>(null)
@@ -25,8 +40,9 @@ function openPicker(field: VantField) {
   pickerVisible.value = true
 }
 
-function onPickerConfirm({ selectedOptions }: { selectedOptions: { text: string }[] }) {
-  if (activeField.value) form[activeField.value.prop] = selectedOptions[0]?.text ?? ''
+// 与 radio 一致，统一存 value（columns 的 value 即选项 value）
+function onPickerConfirm({ selectedOptions }: { selectedOptions: { text: string; value: string }[] }) {
+  if (activeField.value) form[activeField.value.prop] = selectedOptions[0]?.value ?? ''
   pickerVisible.value = false
 }
 
@@ -70,7 +86,9 @@ async function submit() {
   <div class="fill-detail">
     <van-nav-bar :title="node?.title ?? '填报'" left-arrow @click-left="router.back()" />
 
-    <van-form @submit="submit">
+    <van-loading v-if="loading" class="page-loading" size="24">加载中...</van-loading>
+    <van-empty v-else-if="!node" description="节点不存在或无权访问" />
+    <van-form v-else @submit="submit">
       <van-cell-group inset>
         <template v-for="field in fields" :key="field.prop">
           <van-field
