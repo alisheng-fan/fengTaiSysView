@@ -54,6 +54,15 @@ export const systemChildren: MenuNode[] = [
     component: 'system/cond/index', icon: '', sort: 8,
     perms: ['system:condition:add', 'system:condition:edit', 'system:condition:delete'],
   },
+  {
+    id: '29', parentId: '2', name: 'Announcement', title: '公示公告', path: '/system/announcement',
+    component: 'system/announcement/index', icon: '', sort: 9,
+    perms: ['system:announcement:add', 'system:announcement:edit', 'system:announcement:delete'],
+  },
+  {
+    id: '30', parentId: '2', name: 'Notice', title: '通知提醒', path: '/system/notice',
+    component: 'system/notice/index', icon: '', sort: 10, perms: [],
+  },
 ]
 
 export const systemGroup: MenuNode = {

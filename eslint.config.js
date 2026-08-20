@@ -4,7 +4,19 @@ import pluginVue from 'eslint-plugin-vue'
 import prettier from 'eslint-config-prettier'
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'auto-imports.d.ts', 'components.d.ts'] },
+  {
+    ignores: [
+      'dist/**',
+      'mobile/dist/**',
+      'mobile/android/app/build/**',
+      'mobile/android/app/src/main/assets/**',
+      'mobile/android/capacitor-cordova-android-plugins/**',
+      'mobile/version/**',
+      'node_modules/**',
+      'auto-imports.d.ts',
+      'components.d.ts',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
