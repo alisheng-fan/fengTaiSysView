@@ -102,12 +102,15 @@ export interface FieldConfig {
   placeholder?: string
 }
 
-/** 填报节点 */
+/** 流程节点（挂项目、带流程顺序与状态） */
 export interface NodeItem {
   id: string
+  projectId: string
   name: string
+  step: number
   sort: number
-  status: number
+  status: number        // 1 进行中 / 2 已完成
+  date?: string
   fields: FieldConfig[]
 }
 
@@ -115,4 +118,52 @@ export interface NodeItem {
 export interface ChangePasswordParams {
   oldPassword: string
   newPassword: string
+}
+
+/** 项目主数据 */
+export interface ProjectItem {
+  id: string
+  name: string
+  type: 'first' | 'second'
+  builder?: string
+  location?: string
+  landSize?: number
+  buildingSize?: number
+  status: number
+  createTime: string
+}
+
+/** 填报记录（进展录入） */
+export interface FillRecordItem {
+  id: string
+  nodeId: string
+  projectId: string
+  values: Record<string, unknown>
+  createBy: string
+  createTime: string
+}
+
+/** 问题状态：已解决/部分解决/再商议/搁置 */
+export type IssueStatus = 'solved' | 'partial' | 'discuss' | 'shelved'
+
+/** 问题上报 */
+export interface IssueItem {
+  id: string
+  nodeId: string
+  projectId: string
+  nodeName: string
+  dept: string
+  description: string
+  status: IssueStatus
+  createTime: string
+}
+
+/** 监测统计 */
+export interface StatisticsOverview {
+  totalProjects: number
+  firstCount: number
+  secondCount: number
+  issueTotal: number
+  issueSolved: number
+  bizTotal: number
 }

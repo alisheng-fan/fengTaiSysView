@@ -88,3 +88,52 @@ export function submitNodeData(id: string, data: Record<string, unknown>): Promi
 export function getAllMenuTree(): Promise<MenuNode[]> {
   return request<MenuNode[]>({ url: '/system/menu/all', method: 'get' })
 }
+
+import type {
+  FillRecordItem, IssueItem, ProjectItem, StatisticsOverview,
+} from '../types'
+
+// ---------- 项目 ----------
+export function getProjectList(): Promise<ProjectItem[]> {
+  return request<ProjectItem[]>({ url: '/system/project/list', method: 'get' })
+}
+export function createProject(data: Partial<ProjectItem>): Promise<null> {
+  return request<null>({ url: '/system/project', method: 'post', data })
+}
+export function updateProject(data: Partial<ProjectItem>): Promise<null> {
+  return request<null>({ url: '/system/project', method: 'put', data })
+}
+export function deleteProject(id: string): Promise<null> {
+  return request<null>({ url: '/system/project', method: 'delete', params: { id } })
+}
+
+// ---------- 填报记录（进展录入） ----------
+export function getNodeRecords(nodeId: string): Promise<FillRecordItem[]> {
+  return request<FillRecordItem[]>({ url: `/node/${nodeId}/records`, method: 'get' })
+}
+export function createFillRecord(data: {
+  nodeId: string
+  projectId: string
+  values: Record<string, unknown>
+}): Promise<null> {
+  return request<null>({ url: `/node/${data.nodeId}/records`, method: 'post', data })
+}
+export function updateFillRecord(nodeId: string, recordId: string, values: Record<string, unknown>): Promise<null> {
+  return request<null>({ url: `/node/${nodeId}/records/${recordId}`, method: 'put', data: { values } })
+}
+
+// ---------- 问题 ----------
+export function getIssueList(projectId?: string): Promise<IssueItem[]> {
+  return request<IssueItem[]>({ url: '/issue/list', method: 'get', params: projectId ? { projectId } : {} })
+}
+export function createIssue(data: Partial<IssueItem>): Promise<null> {
+  return request<null>({ url: '/issue', method: 'post', data })
+}
+export function updateIssue(data: Partial<IssueItem>): Promise<null> {
+  return request<null>({ url: '/issue', method: 'put', data })
+}
+
+// ---------- 监测统计 ----------
+export function getStatisticsOverview(): Promise<StatisticsOverview> {
+  return request<StatisticsOverview>({ url: '/statistics/overview', method: 'get' })
+}
