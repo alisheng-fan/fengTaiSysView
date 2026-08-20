@@ -96,7 +96,6 @@ export default [
       return ok(null)
     },
   },
-  { url: '/api/node/:id/submit', method: 'post', response: () => ok(null) },
   // ---------- 填报记录（进展录入） ----------
   {
     url: '/api/node/:id/records',

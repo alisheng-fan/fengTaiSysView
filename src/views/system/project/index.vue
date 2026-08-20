@@ -116,6 +116,15 @@ onMounted(load)
         { prop: 'location', label: '项目位置' },
         { prop: 'landSize', label: '用地规模', type: 'number' },
         { prop: 'buildingSize', label: '建筑面积', type: 'number' },
+        {
+          prop: 'status',
+          label: '状态',
+          type: 'radio',
+          options: [
+            { label: '进行中', value: 1 },
+            { label: '已完成', value: 2 },
+          ],
+        },
       ]"
     />
   </el-card>
