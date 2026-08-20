@@ -63,6 +63,15 @@ export const systemChildren: MenuNode[] = [
     id: '30', parentId: '2', name: 'Notice', title: '通知提醒', path: '/system/notice',
     component: 'system/notice/index', icon: '', sort: 10, perms: [],
   },
+  {
+    id: '31', parentId: '2', name: 'Per', title: '人员管理', path: '/system/per',
+    component: 'system/per/index', icon: '', sort: 11,
+    perms: ['system:per:add', 'system:per:edit', 'system:per:delete'],
+  },
+  {
+    id: '32', parentId: '2', name: 'LoginLog', title: '登录日志', path: '/system/loginlog',
+    component: 'system/loginlog/index', icon: '', sort: 12, perms: [],
+  },
 ]
 
 export const systemGroup: MenuNode = {

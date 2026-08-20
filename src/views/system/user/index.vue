@@ -6,11 +6,11 @@
  */
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { createUser, deleteUser, getDeptList, getRoleList, getUserPage, updateUser } from '@/api/system'
+import { createUser, deleteUser, getDeptList, getPerList, getRoleList, getUserPage, updateUser } from '@/api/system'
 import ProTable from '@/components/ProTable/index.vue'
 import type { Column, SearchField } from '@/components/ProTable/types'
 import ProForm from '@/components/ProForm/index.vue'
-import type { DeptItem, RoleItem, UserItem } from '@/types'
+import type { DeptItem, PerItem, RoleItem, UserItem } from '@/types'
 
 /** 用户列表组件实例（提交/删除成功后刷新列表） */
 const tableRef = ref()
@@ -25,11 +25,14 @@ const form = ref<Partial<UserItem>>({})
 const depts = ref<DeptItem[]>([])
 /** 角色选项数据（用户下拉选择） */
 const roles = ref<RoleItem[]>([])
+/** 人员选项数据（用户关联人员下拉选择） */
+const pers = ref<PerItem[]>([])
 
-/** 加载部门与角色下拉选项 */
+/** 加载部门/角色/人员下拉选项 */
 async function loadOptions() {
   depts.value = await getDeptList()
   roles.value = await getRoleList()
+  pers.value = await getPerList()
 }
 
 /** 部门树 → 扁平选项 */
@@ -40,10 +43,15 @@ function flattenDepts(depts: DeptItem[]): { label: string; value: string }[] {
   ])
 }
 
+/** 按人员 id 查找姓名（关联人员列回显，无匹配显示占位符） */
+function perName(id?: string) {
+  return id ? pers.value.find((p) => p.id === id)?.name ?? '-' : '-'
+}
+
 /** 打开"新增用户"弹窗，重置表单为默认值 */
 function openAdd() {
   isEdit.value = false
-  form.value = { username: '', nickname: '', deptId: null, roleIds: [], phone: '', email: '', status: 1 }
+  form.value = { username: '', nickname: '', deptId: null, perId: '', roleIds: [], phone: '', email: '', status: 1 }
   dialogVisible.value = true
 }
 
@@ -84,11 +92,12 @@ async function handleDelete(row: UserItem) {
   tableRef.value?.refresh()
 }
 
-/** 用户列表列配置（status/operation 使用具名插槽） */
+/** 用户列表列配置（status/perId/operation 使用具名插槽） */
 const columns: Column[] = [
   { prop: 'username', label: '用户名', minWidth: 120 },
   { prop: 'nickname', label: '昵称', minWidth: 120 },
   { prop: 'phone', label: '手机号', width: 140 },
+  { prop: 'perId', label: '关联人员', width: 120, slot: 'perId' },
   { prop: 'createTime', label: '创建时间', width: 180 },
   {
     prop: 'status',
@@ -136,6 +145,7 @@ onMounted(loadOptions)
       <template #status="{ row }">
         <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{ statusMap[row.status as keyof typeof statusMap] ?? row.status }}</el-tag>
       </template>
+      <template #perId="{ row }">{{ perName(row.perId) }}</template>
       <template #operation="{ row }">
         <el-button v-perm="'system:user:edit'" type="primary" link @click="openEdit(row)">编辑</el-button>
         <el-button v-perm="'system:user:delete'" type="danger" link @click="handleDelete(row)">删除</el-button>
@@ -153,6 +163,7 @@ onMounted(loadOptions)
         { prop: 'phone', label: '手机号' },
         { prop: 'email', label: '邮箱' },
         { prop: 'deptId', label: '所属部门', type: 'select', options: flattenDepts(depts) },
+        { prop: 'perId', label: '关联人员', type: 'select', options: pers.map((p) => ({ label: p.name, value: p.id })) },
         { prop: 'roleIds', label: '角色', type: 'select', multiple: true, options: roles.map((r) => ({ label: r.name, value: r.id })) },
       ]"
     />

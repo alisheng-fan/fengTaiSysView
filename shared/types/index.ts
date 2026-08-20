@@ -69,6 +69,7 @@ export interface UserItem {
   username: string
   nickname: string
   deptId: string | null
+  perId?: string            // 关联人员（sys_per.id）
   roleIds: string[]
   phone?: string
   email?: string

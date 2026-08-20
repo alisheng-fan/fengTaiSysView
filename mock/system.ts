@@ -28,7 +28,7 @@ export const depts: DeptItem[] = (g.__fengtaiMockDepts ??= [
 ])
 
 export const roles: RoleItem[] = (g.__fengtaiMockRoles ??= [
-  { id: '1', name: '系统管理员', code: 'admin', sort: 1, status: 1, menuIds: ['1', '2', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '3', 'n1', 'n2'], remark: '全部权限' },
+  { id: '1', name: '系统管理员', code: 'admin', sort: 1, status: 1, menuIds: ['1', '2', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '3', 'n1', 'n2'], remark: '全部权限' },
   { id: '2', name: '普通用户', code: 'user', sort: 2, status: 1, menuIds: ['1', '2', '25', '3', 'n1'], remark: '仅仪表盘+修改密码+台账' },
 ])
 
@@ -38,6 +38,7 @@ const users: UserItem[] = [
     username: 'admin',
     nickname: '系统管理员',
     deptId: '1',
+    perId: '1', // 关联人员 张三
     roleIds: ['1'],
     phone: '13800000001',
     status: 1,
@@ -48,6 +49,7 @@ const users: UserItem[] = [
     username: 'user',
     nickname: '普通用户',
     deptId: '11',
+    perId: '2', // 关联人员 李四
     roleIds: ['2'],
     phone: '13800000002',
     status: 1,
@@ -177,6 +179,7 @@ export default [
         username: body.username ?? '',
         nickname: body.nickname ?? '',
         deptId: body.deptId ?? null,
+        perId: body.perId,
         roleIds: body.roleIds ?? [],
         phone: body.phone,
         email: body.email,
