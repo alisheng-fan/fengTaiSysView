@@ -21,7 +21,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  if (!getToken() && to.path !== '/login') return { path: '/login', redirect: to.fullPath }
+  if (!getToken() && to.path !== '/login') return { path: '/login', query: { redirect: to.fullPath } }
   if (getToken() && to.path === '/login') return { path: '/' }
   return true
 })
