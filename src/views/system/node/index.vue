@@ -1,14 +1,17 @@
 <script setup lang="ts">
 /**
  * 节点管理页
- * - 节点列表（所属项目/名称/步骤/排序/状态/字段数）+ 新增/编辑/删除
+ * - 节点列表（所属项目/所属阶段/节点名称/步骤/排序/状态/经办科室/办理时限/是否必要/是否默认/字段数）+ 新增/编辑/删除
+ * - 表单含 所属阶段/经办科室/办理时限/是否必要/是否默认/前置节点 元数据配置
  * - 字段配置编辑器：为每个节点配置动态填报表单的字段（标签/字段名/类型/必填/选项）
  */
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { createNode, deleteNode, getNodeList, getProjectList, updateNode } from '@/api/system'
+import {
+  createNode, deleteNode, getDeptList, getNodeList, getPhaseList, getProjectList, updateNode,
+} from '@/api/system'
 import ProForm from '@/components/ProForm/index.vue'
-import type { FieldConfig, FieldType, NodeItem, ProjectItem } from '@/types'
+import type { DeptItem, FieldConfig, FieldType, NodeItem, PhaseItem, ProjectItem } from '@/types'
 
 /** 节点列表数据 */
 const list = ref<NodeItem[]>([])
@@ -22,10 +25,35 @@ const isEdit = ref(false)
 const form = reactive<Partial<NodeItem>>({})
 /** 项目列表（所属项目下拉与列回显用） */
 const projects = ref<ProjectItem[]>([])
+/** 阶段列表（所属阶段下拉与列回显用） */
+const phases = ref<PhaseItem[]>([])
+/** 部门树（经办科室下拉，扁平化后使用） */
+const depts = ref<DeptItem[]>([])
+
+/** 部门树 → 扁平列表（经办科室列回显与下拉选项用） */
+function flattenDepts(tree: DeptItem[]): { id: string; name: string }[] {
+  return tree.flatMap((d) => [
+    { id: d.id, name: d.name },
+    ...(d.children ? flattenDepts(d.children) : []),
+  ])
+}
+
+/** 扁平后的部门选项 */
+const deptOptions = ref<{ id: string; name: string }[]>([])
 
 /** 按项目 id 查找项目名称（无匹配显示占位符） */
 function projectName(id: string) {
   return projects.value.find((p) => p.id === id)?.name ?? '-'
+}
+
+/** 按阶段 id 查找阶段名称（所属阶段列回显用，无匹配显示占位符） */
+function phaseName(id?: string) {
+  return id ? phases.value.find((p) => p.id === id)?.name ?? '-' : '-'
+}
+
+/** 按部门 id 查找部门名称（经办科室列回显用，无匹配显示占位符） */
+function deptName(id?: string) {
+  return id ? deptOptions.value.find((d) => d.id === id)?.name ?? '-' : '-'
 }
 
 /** 加载节点列表 */
@@ -38,34 +66,38 @@ async function load() {
   }
 }
 
-/** 打开"新增节点"弹窗，重置表单为默认值 */
+/** 打开"新增节点"弹窗，重置表单为默认值（isNeed/isDefault 用 1/0 表示布尔，提交时再还原） */
 function openAdd() {
   isEdit.value = false
-  Object.assign(form, { name: '', projectId: '', step: 1, sort: 1, status: 1 })
+  Object.assign(form, {
+    name: '', projectId: '', phaseId: '', step: 1, sort: 1, status: 1, isNeed: 1, isDefault: 1,
+  })
   dialogVisible.value = true
 }
 
 /**
- * 打开"编辑节点"弹窗，回填节点数据
+ * 打开"编辑节点"弹窗，回填节点数据（布尔 isNeed/isDefault → 1/0 供单选回显）
  * @param row 当前行节点数据
  */
 function openEdit(row: NodeItem) {
   isEdit.value = true
-  Object.assign(form, { ...row })
+  Object.assign(form, { ...row, isNeed: row.isNeed ? 1 : 0, isDefault: row.isDefault ? 1 : 0 })
   dialogVisible.value = true
 }
 
 /**
- * 新增/编辑弹窗提交回调（由 ProForm submitApi 调用）
- * @param values 弹窗表单提交的字段值（name/projectId/step/sort/status）
+ * 新增/编辑弹窗提交回调（由 ProForm submitApi 调用）。
+ * 1/0 → 布尔 isNeed/isDefault，保持与 shared 类型一致
+ * @param values 弹窗表单提交的字段值
  */
 async function handleSubmit(values: Record<string, unknown>) {
+  const payload = { ...values, isNeed: Boolean(values.isNeed), isDefault: Boolean(values.isDefault) }
   if (isEdit.value) {
     // 编辑：以原节点为基础合并新值（保留 id/fields 等字段）
-    await updateNode({ ...(form as NodeItem), ...values } as NodeItem)
+    await updateNode({ ...(form as NodeItem), ...payload } as NodeItem)
   } else {
     // 新增：提交表单值创建节点（fields 默认空数组）
-    await createNode(values as Partial<NodeItem>)
+    await createNode(payload as Partial<NodeItem>)
   }
   load()
 }
@@ -171,9 +203,14 @@ const typeLabel: Record<FieldType, string> = {
 }
 
 onMounted(async () => {
-  // 并行加载节点列表与项目列表（所属项目列/下拉依赖项目数据）
-  const [, projectList] = await Promise.all([load(), getProjectList()])
+  // 并行加载节点列表/项目/阶段/部门（列表列回显与表单下拉均依赖这些数据）
+  const [, projectList, phaseList, deptTree] = await Promise.all([
+    load(), getProjectList(), getPhaseList(), getDeptList(),
+  ])
   projects.value = projectList
+  phases.value = phaseList
+  depts.value = deptTree
+  deptOptions.value = flattenDepts(deptTree)
 })
 </script>
 
@@ -184,8 +221,27 @@ onMounted(async () => {
     </div>
 
     <el-table v-loading="loading" :data="list" border>
-      <el-table-column label="所属项目" min-width="220">
+      <el-table-column label="所属项目" min-width="160">
         <template #default="{ row }">{{ projectName(row.projectId) }}</template>
+      </el-table-column>
+      <el-table-column label="所属阶段" min-width="120">
+        <template #default="{ row }">{{ phaseName(row.phaseId) }}</template>
+      </el-table-column>
+      <el-table-column label="经办科室" min-width="110">
+        <template #default="{ row }">{{ deptName(row.dutyDepId) }}</template>
+      </el-table-column>
+      <el-table-column label="办理时限" width="90">
+        <template #default="{ row }">{{ row.deadlineDays ? `${row.deadlineDays}天` : '-' }}</template>
+      </el-table-column>
+      <el-table-column label="是否必要" width="90">
+        <template #default="{ row }">
+          <el-tag :type="row.isNeed ? 'success' : 'info'">{{ row.isNeed ? '是' : '否' }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="是否默认" width="90">
+        <template #default="{ row }">
+          <el-tag :type="row.isDefault ? 'success' : 'info'">{{ row.isDefault ? '是' : '否' }}</el-tag>
+        </template>
       </el-table-column>
       <el-table-column prop="name" label="节点名称" min-width="140" />
       <el-table-column prop="step" label="步骤" width="80" />
@@ -231,6 +287,44 @@ onMounted(async () => {
           label: '所属项目',
           type: 'select',
           options: projects.map((p) => ({ label: p.name, value: p.id })),
+        },
+        {
+          prop: 'phaseId',
+          label: '所属阶段',
+          type: 'select',
+          options: phases.map((p) => ({ label: p.name, value: p.id })),
+        },
+        {
+          prop: 'preNodeIds',
+          label: '前置节点',
+          type: 'select',
+          multiple: true,
+          options: list.filter((n) => n.id !== form.id).map((n) => ({ label: n.name, value: n.id })),
+        },
+        {
+          prop: 'dutyDepId',
+          label: '经办科室',
+          type: 'select',
+          options: deptOptions.map((d) => ({ label: d.name, value: d.id })),
+        },
+        { prop: 'deadlineDays', label: '办理时限(天)', type: 'number' },
+        {
+          prop: 'isNeed',
+          label: '是否必要',
+          type: 'radio',
+          options: [
+            { label: '是', value: 1 },
+            { label: '否', value: 0 },
+          ],
+        },
+        {
+          prop: 'isDefault',
+          label: '是否默认',
+          type: 'radio',
+          options: [
+            { label: '是', value: 1 },
+            { label: '否', value: 0 },
+          ],
         },
         { prop: 'step', label: '步骤', type: 'number' },
         { prop: 'sort', label: '排序', type: 'number' },

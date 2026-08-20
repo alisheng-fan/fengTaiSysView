@@ -44,6 +44,11 @@ export const systemChildren: MenuNode[] = [
     component: 'system/project/index', icon: '', sort: 6,
     perms: ['system:project:add', 'system:project:edit', 'system:project:delete'],
   },
+  {
+    id: '27', parentId: '2', name: 'Phase', title: '阶段管理', path: '/system/phase',
+    component: 'system/phase/index', icon: '', sort: 7,
+    perms: ['system:phase:add', 'system:phase:edit', 'system:phase:delete'],
+  },
 ]
 
 export const systemGroup: MenuNode = {
