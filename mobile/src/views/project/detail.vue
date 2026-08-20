@@ -86,10 +86,11 @@ onMounted(async () => {
   loading.value = true
   try {
     if (!fillStore.nodes.length) await fillStore.loadNodes()
-    const [n, p, d] = await Promise.all([getNodeList(), getPhaseList(), getDeptList()])
-    allNodes.value = n
-    phases.value = p
-    depts.value = d
+    // 节点列表必须成功渲染；阶段/部门请求失败时降级（phases 空 → 全归「未分类」），不阻塞节点展示
+    allNodes.value = await getNodeList()
+    const [, p, d] = await Promise.allSettled([getPhaseList(), getDeptList()])
+    phases.value = p.status === 'fulfilled' ? p.value : []
+    depts.value = d.status === 'fulfilled' ? d.value : []
   } catch {
     showToast('加载失败')
   } finally {
