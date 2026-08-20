@@ -26,6 +26,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   (e: 'update:modelValue', v: boolean): void
   (e: 'success'): void
+  /** 表单值变化事件（prop, value）：用于级联下拉等依赖场景（如按所选节点加载其字段选项） */
+  (e: 'change', prop: string, value: unknown): void
 }>()
 
 /** el-form 实例（用于 validate / clearValidate） */
@@ -47,6 +49,20 @@ watch(
   () => props.modelValue,
   (visible) => {
     if (visible && props.dialog) resetForm()
+  },
+)
+
+/**
+ * 表单值变化监听：把发生变化的字段（prop, value）通知父级（emit change），
+ * 供级联下拉等依赖场景使用（如触发条件页按所选触发节点动态加载其字段选项）。
+ * 浅快照 diff 只对真正变化过的字段发事件；初始回填（resetForm）也会触发，父级据此重建依赖选项。
+ */
+watch(
+  () => ({ ...form }),
+  (next, prev) => {
+    for (const k of new Set([...Object.keys(prev), ...Object.keys(next)])) {
+      if (next[k] !== prev[k]) emit('change', k, next[k])
+    }
   },
 )
 

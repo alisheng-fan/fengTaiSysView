@@ -25,7 +25,7 @@ async function load() {
 /** 打开新增项目弹窗 */
 function openAdd() {
   isEdit.value = false
-  Object.assign(form, { name: '', type: 'second', status: 1 })
+  Object.assign(form, { name: '', type: 'second', prjType: 'new', status: 1 })
   dialogVisible.value = true
 }
 
@@ -52,6 +52,7 @@ async function handleDelete(row: ProjectItem) {
 }
 
 const typeLabel = { first: '一级开发', second: '二级开发' } as const
+const prjTypeLabel = { new: '新建', rebuild: '续建', alter: '改建' } as const
 
 onMounted(load)
 </script>
@@ -64,11 +65,20 @@ onMounted(load)
 
     <el-table v-loading="loading" :data="list" border>
       <el-table-column prop="name" label="项目名称" min-width="220" />
+      <el-table-column prop="prjCode" label="编码" min-width="110" />
       <el-table-column label="分类" width="100">
         <template #default="{ row }">{{
           typeLabel[row.type as keyof typeof typeLabel] ?? row.type
         }}</template>
       </el-table-column>
+      <el-table-column label="项目类型" width="90">
+        <template #default="{ row }">{{
+          prjTypeLabel[row.prjType as keyof typeof prjTypeLabel] ?? row.prjType ?? '-'
+        }}</template>
+      </el-table-column>
+      <el-table-column prop="landUse" label="土地用途" min-width="110" />
+      <el-table-column prop="landType" label="土地性质" min-width="90" />
+      <el-table-column prop="ratio" label="容积率" width="90" />
       <el-table-column prop="builder" label="建设单位" min-width="120" />
       <el-table-column prop="location" label="项目位置" min-width="140" />
       <el-table-column prop="landSize" label="用地规模" width="100" />
@@ -103,6 +113,7 @@ onMounted(load)
           label: '项目名称',
           rules: [{ required: true, message: '请输入项目名称', trigger: 'blur' }],
         },
+        { prop: 'prjCode', label: '编码' },
         {
           prop: 'type',
           label: '分类',
@@ -112,6 +123,19 @@ onMounted(load)
             { label: '二级开发', value: 'second' },
           ],
         },
+        {
+          prop: 'prjType',
+          label: '项目类型',
+          type: 'radio',
+          options: [
+            { label: '新建', value: 'new' },
+            { label: '续建', value: 'rebuild' },
+            { label: '改建', value: 'alter' },
+          ],
+        },
+        { prop: 'landUse', label: '土地用途' },
+        { prop: 'landType', label: '土地性质' },
+        { prop: 'ratio', label: '容积率', type: 'number' },
         { prop: 'builder', label: '建设单位' },
         { prop: 'location', label: '项目位置' },
         { prop: 'landSize', label: '用地规模', type: 'number' },

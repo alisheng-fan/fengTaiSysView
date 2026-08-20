@@ -12,8 +12,8 @@ import { depts } from './system'
 const g = globalThis as { __fengtaiProjects?: ProjectItem[] }
 
 g.__fengtaiProjects ??= [
-  { id: 'p1', name: '丰台区城乡一体化槐房村和新宫村改造项目', type: 'first', builder: 'xxx单位', location: '丰台区xxx', landSize: 32000, buildingSize: 22323, status: 1, createTime: '2026-01-01 09:00:00' },
-  { id: 'p2', name: '中央民族大学公交首末站项目', type: 'second', builder: 'xxx单位', location: '丰台区xxx', landSize: 3200, buildingSize: 2232, status: 1, createTime: '2026-02-01 09:00:00' },
+  { id: 'p1', name: '丰台区城乡一体化槐房村和新宫村改造项目', type: 'first', prjCode: 'FT-2026-001', builder: 'xxx单位', location: '丰台区xxx', landUse: '居住用地', landType: '集体', prjType: 'new', landSize: 32000, buildingSize: 22323, ratio: 2.5, status: 1, createTime: '2026-01-01 09:00:00' },
+  { id: 'p2', name: '中央民族大学公交首末站项目', type: 'second', prjCode: 'FT-2026-002', builder: 'xxx单位', location: '丰台区xxx', landUse: '交通设施用地', landType: '国有', prjType: 'rebuild', landSize: 3200, buildingSize: 2232, ratio: 1.2, status: 1, createTime: '2026-02-01 09:00:00' },
 ]
 export const projects = g.__fengtaiProjects
 
@@ -66,7 +66,7 @@ export default [
     url: '/api/system/project',
     method: 'post',
     response: ({ body }: { body: Partial<ProjectItem> }) => {
-      projects.push({ id: `p${Date.now()}`, name: body.name ?? '', type: body.type ?? 'second', builder: body.builder, location: body.location, landSize: body.landSize, buildingSize: body.buildingSize, status: body.status ?? 1, createTime: new Date().toLocaleString() })
+      projects.push({ id: `p${Date.now()}`, name: body.name ?? '', type: body.type ?? 'second', prjCode: body.prjCode, builder: body.builder, location: body.location, landUse: body.landUse, landType: body.landType, prjType: body.prjType, landSize: body.landSize, buildingSize: body.buildingSize, ratio: body.ratio, status: body.status ?? 1, createTime: new Date().toLocaleString() })
       return ok(null)
     },
   },

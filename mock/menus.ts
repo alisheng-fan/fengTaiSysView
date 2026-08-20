@@ -49,6 +49,11 @@ export const systemChildren: MenuNode[] = [
     component: 'system/phase/index', icon: '', sort: 7,
     perms: ['system:phase:add', 'system:phase:edit', 'system:phase:delete'],
   },
+  {
+    id: '28', parentId: '2', name: 'Cond', title: '触发条件', path: '/system/cond',
+    component: 'system/cond/index', icon: '', sort: 8,
+    perms: ['system:condition:add', 'system:condition:edit', 'system:condition:delete'],
+  },
 ]
 
 export const systemGroup: MenuNode = {

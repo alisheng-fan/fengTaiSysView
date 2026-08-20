@@ -210,10 +210,15 @@ export interface ProjectItem {
   id: string
   name: string
   type: 'first' | 'second'
+  prjCode?: string               // 项目编码
   builder?: string
   location?: string
+  landUse?: string               // 土地用途
+  landType?: string              // 土地性质
+  prjType?: 'new' | 'rebuild' | 'alter'  // 项目类型（新建/续建/改建）
   landSize?: number
   buildingSize?: number
+  ratio?: number                 // 容积率
   status: number
   createTime: string
 }

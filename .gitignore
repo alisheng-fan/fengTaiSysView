@@ -34,3 +34,6 @@ vite.config.d.ts
 vite.config.js
 vitest.config.d.ts
 vitest.config.js
+
+# vite-plugin-mock 打包产物（测试/开发期生成于 mock 目录）
+mock/_*.bundled_*.mjs
