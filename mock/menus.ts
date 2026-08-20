@@ -39,6 +39,11 @@ export const systemChildren: MenuNode[] = [
     id: '25', parentId: '2', name: 'Password', title: '修改密码', path: '/system/password',
     component: 'system/password/index', icon: '', sort: 5, perms: [],
   },
+  {
+    id: '26', parentId: '2', name: 'Project', title: '项目管理', path: '/system/project',
+    component: 'system/project/index', icon: '', sort: 6,
+    perms: ['system:project:add', 'system:project:edit', 'system:project:delete'],
+  },
 ]
 
 export const systemGroup: MenuNode = {
