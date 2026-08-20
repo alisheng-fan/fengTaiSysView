@@ -37,3 +37,17 @@ npm run build      # 生产构建
 1. 修改 `.env.development` 的 `VITE_API_BASE_URL`，配置 `vite.config.ts` 的 `server.proxy`。
 2. 将 `VITE_USE_MOCK` 设为 `false`。
 3. 按后端实际返回微调 `src/api/` 与 `src/types/`。
+
+## 移动端（mobile/）
+
+H5 应用（Vue 3 + Vant），与 PC 端共用后端接口契约（shared/）。覆盖轻量子集：登录、业务填报、个人中心、修改密码。
+
+```bash
+cd mobile
+npm install
+npm run dev     # 端口 5174，开发（共用仓库根 mock）
+npm run build   # 产出 dist，配合 Capacitor 打 App 壳
+```
+
+- `shared/`：两端共用的 types + api 接口层 + token 工具（PC 端通过 src/ 下薄 re-export 引用，import 路径不变）
+- Capacitor：`npx cap sync` 同步到 android/ 工程，App 内跨域需后端开 CORS 或集成 @capacitor/http
