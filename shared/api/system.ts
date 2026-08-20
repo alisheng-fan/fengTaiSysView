@@ -178,9 +178,9 @@ export function deleteCondition(id: string): Promise<null> {
 }
 
 // ---------- 公示公告 ----------
-/** 公示公告列表 */
-export function getAnnouncementList(): Promise<AnnouncementItem[]> {
-  return request<AnnouncementItem[]>({ url: '/announcement/list', method: 'get' })
+/** 公示公告列表（可传 projectId 只查该项目） */
+export function getAnnouncementList(projectId?: string): Promise<AnnouncementItem[]> {
+  return request<AnnouncementItem[]>({ url: '/announcement/list', method: 'get', params: projectId ? { projectId } : {} })
 }
 /** 发布公示公告 */
 export function createAnnouncement(data: Partial<AnnouncementItem>): Promise<null> {
@@ -196,9 +196,9 @@ export function deleteAnnouncement(id: string): Promise<null> {
 }
 
 // ---------- 通知提醒 ----------
-/** 通知列表 */
-export function getNoticeList(): Promise<NoticeItem[]> {
-  return request<NoticeItem[]>({ url: '/notice/list', method: 'get' })
+/** 通知列表（可传 projectId 只查该项目） */
+export function getNoticeList(projectId?: string): Promise<NoticeItem[]> {
+  return request<NoticeItem[]>({ url: '/notice/list', method: 'get', params: projectId ? { projectId } : {} })
 }
 /** 标记通知已读 */
 export function readNotice(id: string): Promise<null> {
