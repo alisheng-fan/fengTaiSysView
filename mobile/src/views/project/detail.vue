@@ -50,5 +50,8 @@ onMounted(async () => {
         @click="router.push(`/project/${projectId}/node/${n.id}`)"
       />
     </van-cell-group>
+    <div style="margin: 16px">
+      <van-button round block plain type="warning" @click="router.push(`/project/${projectId}/issues`)">问题协助记录</van-button>
+    </div>
   </div>
 </template>
