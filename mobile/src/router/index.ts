@@ -9,12 +9,15 @@ const router = createRouter({
     {
       path: '/',
       component: MainTab,
-      redirect: '/fill',
+      redirect: '/home',
       children: [
-        { path: 'fill', name: 'fill-list', component: () => import('@/views/fill/index.vue') },
-        { path: 'fill/:nodeId', name: 'fill-detail', component: () => import('@/views/fill/detail.vue') },
+        { path: 'home', name: 'home', component: () => import('@/views/home/index.vue') },
+        { path: 'monitor', name: 'monitor', component: () => import('@/views/monitor/index.vue') },
         { path: 'profile', name: 'profile', component: () => import('@/views/profile/index.vue') },
         { path: 'password', name: 'password', component: () => import('@/views/password/index.vue') },
+        { path: 'progress', name: 'progress', component: () => import('@/views/progress/index.vue') },
+        { path: 'project/:id', name: 'project-detail', component: () => import('@/views/project/detail.vue') },
+        { path: 'project/:id/node/:nodeId', name: 'node-fill', component: () => import('@/views/project/node-fill.vue') },
       ],
     },
   ],
