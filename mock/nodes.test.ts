@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildNodeMenuChildren } from './nodes'
+import { buildNodeMenuChildren, createFillRecord, fillRecords } from './nodes'
+import { notices } from './notice'
 import type { NodeItem } from '@/types'
 
 describe('mock/nodes buildNodeMenuChildren', () => {
@@ -38,5 +39,41 @@ describe('mock/nodes buildNodeMenuChildren', () => {
 
   it('空数组返回空', () => {
     expect(buildNodeMenuChildren([])).toEqual([])
+  })
+})
+
+describe('mock/nodes createFillRecord 提交后自动通知', () => {
+  it('提交 n1 填报后自动推送 n2「报表填报」提醒：通知数 +1 且字段正确', () => {
+    const recordsBefore = fillRecords.length
+    const noticesBefore = notices.length
+    createFillRecord({ nodeId: 'n1', projectId: 'p2', values: { street: '示例街道', population: '1000', isKey: '是' } })
+    try {
+      expect(fillRecords.length).toBe(recordsBefore + 1)
+      expect(notices.length).toBe(noticesBefore + 1)
+      const nt = notices[notices.length - 1]
+      expect(nt).toMatchObject({
+        projectId: 'p2',
+        nodeId: 'n2',
+        noticeType: 'REMIND',
+        read: false,
+      })
+      expect(nt.id).toMatch(/^nt\d+$/)
+      expect(nt.title).toBe('请及时处理报表填报')
+      expect(nt.content).toContain('报表填报')
+    } finally {
+      // globalThis 跨测试共享：恢复长度，避免影响本文件其它用例
+      fillRecords.pop()
+      notices.pop()
+    }
+  })
+
+  it('最后一个节点（无同项目 step+1 的 isNeed 节点）提交不产生通知', () => {
+    const noticesBefore = notices.length
+    createFillRecord({ nodeId: 'n2', projectId: 'p2', values: { title: '月报' } })
+    try {
+      expect(notices.length).toBe(noticesBefore)
+    } finally {
+      fillRecords.pop()
+    }
   })
 })

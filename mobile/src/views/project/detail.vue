@@ -88,7 +88,7 @@ onMounted(async () => {
     if (!fillStore.nodes.length) await fillStore.loadNodes()
     // 节点列表必须成功渲染；阶段/部门请求失败时降级（phases 空 → 全归「未分类」），不阻塞节点展示
     allNodes.value = await getNodeList()
-    const [, p, d] = await Promise.allSettled([getPhaseList(), getDeptList()])
+    const [p, d] = await Promise.allSettled([getPhaseList(), getDeptList()])
     phases.value = p.status === 'fulfilled' ? p.value : []
     depts.value = d.status === 'fulfilled' ? d.value : []
   } catch {

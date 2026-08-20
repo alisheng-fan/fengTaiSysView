@@ -1,5 +1,6 @@
 import type { MockMethod } from 'vite-plugin-mock'
 import type { FillRecordItem, MenuNode, NodeItem } from '@/types'
+import { notices } from './notice'
 
 /**
  * 共享可变状态：vite-plugin-mock 独立打包每个 mock 文件，直接 import 会把数据副本
@@ -77,6 +78,29 @@ export function buildNodeMenuChildren(nodeIds: string[], source: NodeItem[] = no
 
 const ok = (data: unknown) => ({ code: 0, message: 'ok', data })
 
+/**
+ * 创建填报记录：push 记录后，若存在同 projectId 且 step = 当前节点 step+1 的 isNeed 节点，
+ * 自动向 notices 推送一条「上一节点已完成」提醒（提交后自动通知下一环节，前端无需额外调用）。
+ * 抽出为纯函数便于单测（POST /api/node/:id/records 处理器调用）。
+ */
+export function createFillRecord(data: { nodeId: string; projectId: string; values: Record<string, unknown> }): void {
+  fillRecords.push({ id: `r${Date.now()}`, nodeId: data.nodeId, projectId: data.projectId ?? '', values: data.values ?? {}, createBy: 'demo', createTime: new Date().toLocaleString() })
+  const current = nodes.find((x) => x.id === data.nodeId)
+  if (!current) return
+  const next = nodes.find((x) => x.projectId === current.projectId && x.step === current.step + 1 && x.isNeed)
+  if (!next) return
+  notices.push({
+    id: `nt${Date.now()}`,
+    projectId: current.projectId,
+    nodeId: next.id,
+    title: `请及时处理${next.name}`,
+    content: `上一节点已完成，请及时办理「${next.name}」。`,
+    noticeType: 'REMIND',
+    read: false,
+    createTime: new Date().toLocaleString(),
+  })
+}
+
 export default [
   { url: '/api/system/node/list', method: 'get', response: () => ok(nodes) },
   {
@@ -132,7 +156,7 @@ export default [
     url: '/api/node/:id/records',
     method: 'post',
     response: ({ query, body }: { query: { id: string }; body: { projectId: string; values: Record<string, unknown> } }) => {
-      fillRecords.push({ id: `r${Date.now()}`, nodeId: query.id, projectId: body.projectId ?? '', values: body.values ?? {}, createBy: 'demo', createTime: new Date().toLocaleString() })
+      createFillRecord({ nodeId: query.id, projectId: body.projectId ?? '', values: body.values ?? {} })
       return ok(null)
     },
   },
