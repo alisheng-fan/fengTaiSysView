@@ -192,8 +192,8 @@ onMounted(async () => {
       <el-table-column prop="sort" label="排序" width="80" />
       <el-table-column label="状态" width="90">
         <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{
-            row.status === 1 ? '启用' : '停用'
+          <el-tag :type="row.status === 1 ? 'success' : 'info'">{{
+            row.status === 1 ? '进行中' : '已完成'
           }}</el-tag>
         </template>
       </el-table-column>
@@ -239,8 +239,8 @@ onMounted(async () => {
           label: '状态',
           type: 'radio',
           options: [
-            { label: '启用', value: 1 },
-            { label: '停用', value: 0 },
+            { label: '进行中', value: 1 },
+            { label: '已完成', value: 2 },
           ],
         },
       ]"

@@ -43,10 +43,13 @@ const fr = globalThis as { __fengtaiFillRecords?: FillRecordItem[] }
 fr.__fengtaiFillRecords ??= []
 export const fillRecords = fr.__fengtaiFillRecords
 
-/** 节点 → 业务填报子菜单（纯函数：按传入 nodeIds 过滤启用节点、按 sort 排序、携带 fields） */
+/**
+ * 节点 → 业务填报子菜单（纯函数：按传入 nodeIds 过滤，可见性只由角色分配决定、
+ * 与节点生命周期 status 无关；按 sort 排序、携带 fields）
+ */
 export function buildNodeMenuChildren(nodeIds: string[], source: NodeItem[] = nodes): MenuNode[] {
   return source
-    .filter((n) => nodeIds.includes(n.id) && n.status === 1)
+    .filter((n) => nodeIds.includes(n.id))
     .sort((a, b) => a.sort - b.sort)
     .map((n) => ({
       id: n.id,
