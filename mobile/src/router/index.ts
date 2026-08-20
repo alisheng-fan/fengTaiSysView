@@ -19,6 +19,8 @@ const router = createRouter({
         { path: 'project/:id', name: 'project-detail', component: () => import('@/views/project/detail.vue') },
         { path: 'project/:id/node/:nodeId', name: 'node-fill', component: () => import('@/views/project/node-fill.vue') },
         { path: 'project/:id/issues', name: 'project-issues', component: () => import('@/views/project/issues.vue') },
+        { path: 'project/:id/notice', name: 'project-notice', component: () => import('@/views/notice/index.vue') },
+        { path: 'project/:id/announcement', name: 'project-announcement', component: () => import('@/views/announcement/index.vue') },
       ],
     },
   ],
